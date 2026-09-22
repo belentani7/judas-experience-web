@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#030006">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="BELENTANI OS — sistema operativo lírico-neón do caos que somos. Escritório, janelas, dock e terminal CAOS. 432 Hz.">
+<meta name="author" content="Belentani">
+<title>BELENTANI OS — o caos que somos · 432 Hz</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --void:#030006; --void2:#0a0312; --white:#f7fbff; --muted:#9c96ab; --dim:#6c6679;
+    --red:#ff003c; --redhot:#ff285f; --cyan:#65f7ff; --gold:#ffd45c; --violet:#8b5cff;
+    --line:rgba(255,255,255,.14); --glass:rgba(255,255,255,.05);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;
+    --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--void);color:var(--white);font-family:var(--sans);overflow:hidden;user-select:none}
+  #bg{position:fixed;inset:0;z-index:0}
+  .scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;
+    background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+  .vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%,transparent 45%,rgba(0,0,0,.7))}
+
+  /* ---------- boot ---------- */
+  #boot{position:fixed;inset:0;z-index:100;background:#020004;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;font-family:var(--mono);transition:opacity .7s}
+  #boot.done{opacity:0;pointer-events:none}
+  #boot .sig{font-size:11px;letter-spacing:.5em;color:var(--redhot);text-transform:uppercase}
+  #bootlog{width:min(92vw,600px);height:170px;font-size:12px;color:var(--muted);overflow:hidden}
+  #bootlog div{opacity:0;animation:bl .4s forwards}
+  @keyframes bl{to{opacity:1}}
+  #boot .bar{width:min(92vw,600px);height:2px;background:rgba(255,255,255,.08)}
+  #boot .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--cyan));animation:bb 2.6s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes bb{to{width:100%}}
+
+  /* ---------- menubar ---------- */
+  #menubar{position:fixed;top:0;left:0;right:0;height:34px;z-index:60;display:flex;align-items:center;gap:16px;
+    padding:0 14px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    background:linear-gradient(180deg,rgba(10,3,18,.9),rgba(10,3,18,.55));backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line)}
+  #menubar .brand{display:flex;align-items:center;gap:9px;font-weight:700;color:var(--white)}
+  #menubar .orb{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 10%,var(--red) 45%,#5b0018);box-shadow:0 0 14px rgba(255,0,60,.8);animation:pulse 3s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 26px rgba(255,0,60,1)}}
+  #menubar .sp{flex:1}
+  #menubar .st{color:var(--dim)}
+  #menubar .st b{color:var(--cyan);font-weight:600}
+  #clock{color:var(--white)}
+
+  /* ---------- dock ---------- */
+  #dock{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:60;display:flex;gap:8px;
+    padding:9px 12px;border:1px solid var(--line);border-radius:18px;background:rgba(12,4,20,.62);backdrop-filter:blur(16px)}
+  .app{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:var(--muted);
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;cursor:pointer;padding:6px 8px;border-radius:12px;transition:transform .25s,background .25s}
+  .app:hover{background:var(--glass);transform:translateY(-3px)}
+  .app i{width:34px;height:34px;border-radius:11px;border:1px solid var(--line);display:grid;place-items:center;font-size:15px;font-style:normal;
+    background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.02))}
+  .app[data-app="caos"] i{border-color:var(--cyan);color:var(--cyan)}
+  .app[data-app="lore"] i{border-color:var(--red);color:var(--redhot)}
+  .app[data-app="obras"] i{border-color:var(--violet);color:var(--violet)}
+  .app[data-app="audio"] i,.app[data-app="radio"] i{border-color:var(--gold);color:var(--gold)}
+
+  /* ---------- windows ---------- */
+  .win{position:absolute;min-width:280px;min-height:160px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    background:linear-gradient(160deg,rgba(14,5,22,.94),rgba(4,1,8,.96));backdrop-filter:blur(18px);z-index:10;
+    box-shadow:0 30px 90px rgba(0,0,0,.6);display:flex;flex-direction:column}
+  .win.focus{border-color:var(--redhot);box-shadow:0 34px 110px rgba(255,0,60,.18)}
+  .tb{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);cursor:grab;
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .tb .dots{display:flex;gap:6px}
+  .tb .dots b{width:11px;height:11px;border-radius:50%;display:block;background:#2a2130}
+  .tb .dots b:first-child{background:var(--red)} .tb .dots b:nth-child(2){background:var(--gold)} .tb .dots b:nth-child(3){background:var(--cyan)}
+  .tb .t{flex:1}
+  .tb button{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:11px;padding:2px 8px}
+  .tb button:hover{color:var(--white);border-color:var(--redhot)}
+  .body{padding:16px;overflow:auto;font-size:14px;color:#d9d4e2;line-height:1.6}
+  .body h2{font-size:18px;margin:0 0 10px;color:var(--white)}
+  .body h3{font-size:14px;margin:14px 0 6px;color:var(--redhot);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
+  .body p{margin:0 0 10px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  .work{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#06010b;cursor:crosshair}
+  .work canvas{width:100%;aspect-ratio:16/10;display:block}
+  .work span{display:block;padding:6px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim)}
+  .term{font-family:var(--mono);font-size:12.5px;color:var(--cyan);background:#020208;padding:12px;height:100%;overflow:auto}
+  .term .in{color:var(--white)} .term .err{color:var(--redhot)}
+  #terminalInput{background:none;border:0;outline:none;color:var(--cyan);font-family:var(--mono);font-size:12.5px;width:70%}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .btn{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--white);font-family:var(--mono);font-size:11px;letter-spacing:.12em;cursor:pointer}
+  .btn:hover{border-color:var(--redhot)}
+  form{display:grid;gap:10px}
+  input,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;font:inherit}
+  label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+  a{color:var(--redhot)}
+  #desktop{position:fixed;inset:34px 0 98px 0;z-index:5;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,84px);grid-auto-rows:92px;gap:6px;align-content:start}
+  .dicon{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;border-radius:12px;cursor:pointer;color:#d9d4e2;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-align:center;border:1px solid transparent;transition:background .2s}
+  .dicon:hover{background:rgba(255,255,255,.06)}
+  .dicon.sel{background:rgba(255,0,60,.18);border-color:var(--redhot)}
+  .dicon i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:19px;font-style:normal;border:1px solid var(--line);background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.02))}
+  #ctx{position:fixed;z-index:200;min-width:200px;border:1px solid var(--line);border-radius:12px;background:rgba(12,4,20,.96);backdrop-filter:blur(16px);padding:6px;display:none;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+  #ctx button{display:block;width:100%;text-align:left;background:none;border:0;color:#d9d4e2;font-family:var(--mono);font-size:11px;padding:8px 10px;border-radius:8px;cursor:pointer}
+  #ctx button:hover{background:var(--red);color:#fff}
+  @media(max-width:640px){#dock{gap:4px;padding:7px}.app i{width:28px;height:28px;font-size:13px}.app{font-size:8px}}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="scan" aria-hidden="true"></div>
+<div class="vig" aria-hidden="true"></div>
+
+<div id="boot" role="status" aria-live="polite">
+  <div class="sig">BELENTANI OS · 432 HZ</div>
+  <div id="bootlog"></div>
+  <div class="bar"><i></i></div>
+</div>
+
+<div id="menubar">
+  <span class="brand"><span class="orb" aria-hidden="true"></span> BELENTANI OS</span>
+  <span class="st">node <b>JUDAS-CORE-07</b></span>
+  <span class="st">bio <b id="bioPulse">—</b></span>
+  <span class="sp"></span>
+  <span class="st">freq <b>432.00 Hz</b></span>
+  <span class="st" id="clock">--:--:--</span>
+</div>
+
+<div id="dock" aria-label="Aplicações">
+  <button class="app" data-app="lore"><i>◈</i>LORE</button>
+  <button class="app" data-app="obras"><i>▦</i>OBRAS</button>
+  <button class="app" data-app="audio"><i>♪</i>AUDIO</button>
+  <button class="app" data-app="video"><i>▶</i>VÍDEO</button>
+  <button class="app" data-app="radio"><i>≈</i>RADIO 432</button>
+  <button class="app" data-app="sessoes"><i>≡</i>SESSÕES</button>
+  <button class="app" data-app="experiencia"><i>✵</i>EXPERIÊNCIA</button>
+  <button class="app" data-app="newsletter"><i>✉</i>NEWSLETTER</button>
+  <button class="app" data-app="prensa"><i>✦</i>PRENSA</button>
+  <button class="app" data-app="booking"><i>✉</i>BOOKING</button>
+  <button class="app" data-app="caos"><i>&gt;_</i>CAOS</button>
+</div>
+
+<div id="desktop" aria-label="Área de trabalho"></div>
+<div id="ctx" role="menu"></div>
+
+<script>
+/* =============================================================================
+   BELENTANI OS — GUI lírica de néon. Sem dependências, sem recursos externos.
+   ========================================================================== */
+(function(){
+"use strict";
+var $=function(s,c){return (c||document).querySelector(s);};
+var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s));};
+var MONO="ui-monospace,Menlo,Consolas,monospace";
+var PAL=["#ff003c","#ff285f","#65f7ff","#8b5cff","#ffd45c"];
+
+/* ---------------- fundo procedural ---------------- */
+(function bg(){
+  var cv=$("#bg"), x=cv.getContext("2d"), W=0,H=0,d=Math.min(devicePixelRatio||1,2), stars=[], t=0;
+  function rs(){ W=cv.width=Math.round(innerWidth*d); H=cv.height=Math.round(innerHeight*d);
+    stars=[]; for(var i=0;i<160;i++) stars.push({x:Math.random(),y:Math.random(),z:Math.random(),s:Math.random()*1.5+.3}); }
+  rs(); addEventListener("resize",rs,{passive:true});
+  (function loop(){
+    requestAnimationFrame(loop); t+=0.006;
+    var g=x.createRadialGradient(W*0.72,H*0.3,10,W*0.72,H*0.3,W*0.9);
+    g.addColorStop(0,"rgba(255,0,60,.16)"); g.addColorStop(.45,"rgba(139,92,255,.07)"); g.addColorStop(1,"rgba(3,0,6,1)");
+    x.fillStyle="#030006"; x.fillRect(0,0,W,H); x.fillStyle=g; x.fillRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){ var s=stars[i]; s.y+=(0.0004+s.z*0.0016); if(s.y>1)s.y=0;
+      x.globalAlpha=.25+s.z*.75; x.fillStyle=s.z>.82?"#65f7ff":"#ffffff"; x.fillRect(s.x*W,s.y*H,s.s*d,s.s*d); }
+    x.globalAlpha=1;
+  })();
+})();
+
+/* ---------------- boot ---------------- */
+(function boot(){
+  var lines=["> belentani os 1.0 · núcleo JUDAS-CORE-07",
+    "  · montando vazio procedural","  · abrindo portas do caos","  · calibrando 432.00 Hz",
+    "  · carregando lore: 6 eras · 4 gemas · 5 elementos","  · dock pronto",
+    "> bem-vindo ao caos. é teu."];
+  var box=$("#bootlog");
+  lines.forEach(function(t,i){ var el=document.createElement("div"); el.textContent=t; el.style.animationDelay=(i*0.26)+"s"; box.appendChild(el); });
+  setTimeout(function(){ $("#boot").classList.add("done"); setTimeout(function(){ var b=$("#boot"); if(b&&b.parentNode) b.parentNode.removeChild(b); },800); }, 2800);
+})();
+
+/* ---------------- relógio / telemetria ---------------- */
+(function clock(){
+  var c=$("#clock"), p=$("#bioPulse");
+  setInterval(function(){
+    var d=new Date();
+    c.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(function(n){return String(n).padStart(2,"0");}).join(":");
+    p.textContent = Math.round(74+16*Math.abs(Math.cos(Date.now()/5200))) + "%";
+  },1000);
+})();
+
+/* ---------------- window manager ---------------- */
+var zTop=10, opened=0;
+function openWin(id,title,x,y,w,h,content){
+  var existing=$("#win-"+id);
+  if(existing){ focus(existing); return existing; }
+  var win=document.createElement("div");
+  win.className="win"; win.id="win-"+id;
+  win.style.cssText="left:"+x+"px;top:"+y+"px;width:"+w+"px;height:"+h+"px";
+  var tb=document.createElement("div"); tb.className="tb";
+  tb.innerHTML='<span class="dots"><b></b><b></b><b></b></span><span class="t">'+title+'</span>';
+  var cl=document.createElement("button"); cl.textContent="×"; cl.setAttribute("aria-label","Fechar "+title);
+  tb.appendChild(cl);
+  var body=document.createElement("div"); body.className="body";
+  if(typeof content==="string") body.innerHTML=content; else body.appendChild(content);
+  win.appendChild(tb); win.appendChild(body);
+  document.body.appendChild(win);
+  cl.addEventListener("click",function(){ if(win.parentNode) win.parentNode.removeChild(win); });
+  tb.addEventListener("pointerdown",function(e){
+    if(e.target===cl) return; focus(win);
+    var sx=e.clientX, sy=e.clientY, ox=win.offsetLeft, oy=win.offsetTop;
+    function mv(ev){ win.style.left=Math.max(0,Math.min(innerWidth-80,ox+ev.clientX-sx))+"px";
+      win.style.top=Math.max(34,Math.min(innerHeight-60,oy+ev.clientY-sy))+"px"; }
+    function up(){ removeEventListener("pointermove",mv); removeEventListener("pointerup",up); }
+    addEventListener("pointermove",mv); addEventListener("pointerup",up);
+    e.preventDefault();
+  });
+  win.addEventListener("pointerdown",function(){ focus(win); });
+  opened++; focus(win);
+  return win;
+}
+function focus(w){ $$(".win").forEach(function(x){x.classList.remove("focus");}); w.classList.add("focus"); w.style.zIndex=++zTop; }
+
+/* ---------------- gerador de arte (para OBRAS) ---------------- */
+function seedRnd(seed){ var r=seed*9301+49297; return function(){ r=(r*9301+49297)%233280; return r/233280; }; }
+function drawArt(cv,mode,seed){
+  var d=Math.min(devicePixelRatio||1,2), w=cv.width=Math.round(300*d), h=cv.height=Math.round(190*d);
+  var x=cv.getContext("2d"), R=seedRnd(seed);
+  function A(hex,a){ var n=parseInt(hex.slice(1),16); return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")"; }
+  var g=x.createLinearGradient(0,0,w,h); g.addColorStop(0,"#08000e"); g.addColorStop(1,"#150017");
+  x.fillStyle=g; x.fillRect(0,0,w,h);
+  if(mode==="orbit"){ for(var k=0;k<6;k++){ x.beginPath(); x.arc(w/2,h/2,(12+k*15)*d,R()*6.28,R()*6.28+1.3); x.strokeStyle=A(PAL[k%5],.85); x.lineWidth=2*d; x.stroke(); } x.beginPath(); x.arc(w/2,h/2,11*d,0,7); x.fillStyle="#ff285f"; x.fill(); }
+  else if(mode==="grid"){ x.strokeStyle=A("#65f7ff",.45); for(var gx=0;gx<w;gx+=18*d){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,h);x.stroke();} for(var gy=0;gy<h;gy+=18*d){x.beginPath();x.moveTo(0,gy);x.lineTo(w,gy);x.stroke();}
+    for(var q=0;q<40;q++){x.fillStyle=A(PAL[Math.floor(R()*5)],.9);x.fillRect(R()*w,R()*h,2*d,2*d);} }
+  else if(mode==="wave"){ x.lineWidth=1.5*d; for(var v=0;v<34;v++){ x.beginPath(); x.strokeStyle=A(PAL[v%5],.7); for(var px=0;px<=w;px+=7*d){ var yy=h/2+Math.sin(px/w*6.283*2+v*.3)*(v*2+6)*d; px?x.lineTo(px,yy):x.moveTo(px,yy);} x.stroke(); } }
+  else if(mode==="rings"){ for(var rr=0;rr<44;rr++){ x.beginPath(); x.ellipse(w/2,h/2,(7+rr*4)*d,(7+rr*4)*d*.5,rr*.02,0,7); x.strokeStyle=A(PAL[rr%5],.5); x.lineWidth=d; x.stroke(); } }
+  else if(mode==="mandala"){ for(var m=0;m<36;m++){ var a2=m/36*6.283; x.beginPath(); x.moveTo(w/2,h/2); x.lineTo(w/2+Math.cos(a2)*w*.45,h/2+Math.sin(a2)*h*.45); x.strokeStyle=A(PAL[m%5],.35); x.stroke(); }
+    for(var c2=0;c2<5;c2++){ x.beginPath(); x.arc(w/2,h/2,(14+c2*18)*d,0,7); x.strokeStyle=A("#fff",.35); x.stroke(); } }
+  else if(mode==="circuit"){ x.strokeStyle=A("#ffd45c",.7); x.lineWidth=1.4*d; for(var b=0;b<22;b++){ var x1=R()*w,y1=R()*h; x.beginPath(); x.moveTo(x1,y1); x.lineTo(x1+(R()-.5)*90*d, y1); x.lineTo(x1+(R()-.5)*90*d, y1+(R()-.5)*70*d); x.stroke(); }
+    for(var nd=0;nd<26;nd++){ x.fillStyle=A(PAL[Math.floor(R()*5)],.95); x.fillRect(R()*w,R()*h,2.2*d,2.2*d); } }
+  else { for(var s2=0;s2<220;s2++){ x.fillStyle=A(PAL[Math.floor(R()*5)],.8); x.fillRect(R()*w,R()*h,1.3*d,1.3*d); }
+    var ng=x.createRadialGradient(w/2,h/2,3,w/2,h/2,w*.7); ng.addColorStop(0,"rgba(255,40,95,.5)"); ng.addColorStop(1,"transparent"); x.fillStyle=ng; x.fillRect(0,0,w,h); }
+}
+
+/* ---------------- apps ---------------- */
+var APPS={
+  lore:{title:"LORE · códice unificado", w:520,h:420, x:80,y:70, build:function(){
+    var d=document.createElement("div");
+    d.innerHTML='<h2>O universo em vermelho</h2><p>Quatro gemas, cinco elementos e seis nós. Onde as versões se contradiziam, prevalece o código mais sofisticado.</p>'
+      +'<h3>As seis eras</h3><p>0 caos · I núcleo · II o artista · III neon glassmorphism · IV Judas · V Omega.</p>'
+      +'<h3>As quatro gemas</h3><p>Traição · Frequência · Revelação · Redenção.</p>'
+      +'<h3>Os cinco elementos</h3><p>A Rocha · O Cronista · A Antena · O Artefato · The Human.</p>';
+    return d;
+  }},
+  obras:{title:"OBRAS · catálogo", w:560,h:460, x:150,y:110, build:function(){
+    var wrap=document.createElement("div");
+    var names=["Núcleo 04","Eclipse Vermelho","Hélice de Judas","Cidade Subterrânea","Túnel Estelar","Cristal Primordial","Frequência Dupla","Mandala Judas","Circuito Vivo","Espelho de Omega","Coroa","Sangue"];
+    var modes=["orbit","nebula","wave","grid","rings","mandala","circuit","crystal_right"];
+    var g=document.createElement("div"); g.className="grid";
+    names.forEach(function(nm,i){
+      var c=document.createElement("div"); c.className="work"; c.tabIndex=0;
+      var cv=document.createElement("canvas"); var sp=document.createElement("span"); sp.textContent=nm;
+      c.appendChild(cv); c.appendChild(sp); g.appendChild(c);
+      drawArt(cv,modes[i%modes.length],i*7+3);
+      var rd=function(){ drawArt(cv,modes[Math.floor(Math.random()*modes.length)],Math.floor(Math.random()*999)); };
+      c.addEventListener("click",rd);
+      c.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();rd();} });
+    });
+    wrap.appendChild(g);
+    var p=document.createElement("p"); p.style.marginTop="12px"; p.textContent="Clique num painel para recompor. 44+ obras no catálogo completo.";
+    wrap.appendChild(p); return wrap;
+  }},
+  audio:{title:"AUDIO · drone 432 Hz", w:460,h:300, x:220,y:150, build:function(){ return audioPanel(); }},
+  radio:{title:"RADIO 432 · ao vivo", w:520,h:320, x:260,y:120, build:function(){ return audioPanel(true); }},
+  sessoes:{title:"SESSÕES · multitrack", w:540,h:470, x:200,y:120, build:function(){ return sessionsPanel(); }},
+  experiencia:{title:"EXPERIÊNCIA · viagem 168 s", w:480,h:220, x:250,y:160, build:function(){ return expPanel(); }},
+  newsletter:{title:"NEWSLETTER · lista própria", w:440,h:380, x:290,y:130, build:function(){ return newsPanel(); }},
+  video:{title:"VÍDEO · procedural", w:560,h:360, x:120,y:200, build:function(){ return videoPanel(); }},
+  prensa:{title:"PRENSA · press-kit", w:520,h:420, x:180,y:90, build:function(){
+    var d=document.createElement("div");
+    d.innerHTML='<h2>Press-kit</h2><h3>Bio curta</h3><p>BELENTANI — artista visual e sonoro. The Judas Experience: um universo procedural a 432 Hz.</p>'
+      +'<h3>Bio longa</h3><p>BELENTANI constrói sistemas: música dark pop, motores gráficos próprios e um lore contínuo em seis eras. Obra onde o código é a tela.</p>'
+      +'<h3>Ficha técnica</h3><p>Formato: solo + convidados · Duração: 40–60 min · Som: 432 Hz · Rider: 1 DI, PA estéreo, luz vermelha/ciano.</p>';
+    var row=document.createElement("div"); row.className="row";
+    var a=document.createElement("a"); a.className="btn"; a.textContent="Descarregar EPK (DOCX)";
+    a.href="EMPRESA/EPK-BELENTANI.docx"; a.setAttribute("download","BELENTANI-EPK.docx");
+    row.appendChild(a); d.appendChild(row); return d;
+  }},
+  booking:{title:"BOOKING · contacto", w:460,h:420, x:300,y:110, build:function(){
+    var d=document.createElement("div");
+    d.innerHTML='<h2>Fale com o núcleo</h2>';
+    var f=document.createElement("form"); f.noValidate=true;
+    [["Nome","nome","text"],["E-mail","email","email"],["Sala / Projeto","org","text"]].forEach(function(fi){
+      var l=document.createElement("label"); l.textContent=fi[0]; l.setAttribute("for","bk-"+fi[1]);
+      var i=document.createElement("input"); i.id="bk-"+fi[1]; i.type=fi[2];
+      f.appendChild(l); f.appendChild(i);
+    });
+    var lm=document.createElement("label"); lm.textContent="Mensagem";
+    var ta=document.createElement("textarea"); ta.rows=4; ta.id="bk-msg";
+    f.appendChild(lm); f.appendChild(ta);
+    var b=document.createElement("button"); b.className="btn"; b.type="submit"; b.textContent="ENVIAR";
+    var ok=document.createElement("p"); ok.style.color="#54ffa8"; ok.setAttribute("role","status");
+    f.appendChild(b); f.appendChild(ok);
+    f.addEventListener("submit",function(e){
+      e.preventDefault();
+      var nome=$("#bk-nome").value.trim(), mail=$("#bk-email").value.trim(), msg=$("#bk-msg").value.trim();
+      if(nome.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)||msg.length<4){ ok.style.color="#ff285f"; ok.textContent="Preenche nome, e-mail válido e mensagem."; return; }
+      ok.style.color="#54ffa8"; ok.textContent="Registado no núcleo. Obrigado."; f.reset();
+    });
+    d.appendChild(f); return d;
+  }},
+  caos:{title:"CAOS · terminal", w:540,h:340, x:200,y:170, build:function(){ return termPanel(); }}
+};
+
+/* ---------------- painéis com animação própria ---------------- */
+function audioPanel(radio){
+  var wrap=document.createElement("div");
+  var cv=document.createElement("canvas"); cv.style.cssText="width:100%;height:150px;border:1px solid var(--line);border-radius:12px;background:#020208;display:block";
+  wrap.appendChild(cv);
+  if(radio){
+    var au=document.createElement("audio"); au.controls=true; au.preload="none";
+    au.src="assets/audio/judas-demo-pura.mp3"; au.style.cssText="width:100%;margin-top:10px";
+    var al=document.createElement("div"); al.className="row";
+    var an=document.createElement("span"); an.style.cssText="font-family:"+MONO+";font-size:10px;color:#6c6679";
+    an.textContent="Judas — demo pura (áudio local)";
+    al.appendChild(au); al.appendChild(an); wrap.appendChild(al);
+  }
+  var row=document.createElement("div"); row.className="row";
+  var b=document.createElement("button"); b.className="btn"; b.textContent="ATIVAR 432 HZ";
+  var note=document.createElement("span"); note.style.cssText="font-family:"+MONO+";font-size:10px;color:#6c6679";
+  note.textContent = radio ? "Toca a tua demo; o drone 432 Hz pode somar por cima." : "Onda sintetizada em tempo real (WebAudio).";
+  row.appendChild(b); row.appendChild(note); wrap.appendChild(row);
+  var ctx2=cv.getContext("2d"), W=0,H=0,d=Math.min(devicePixelRatio||1,2), ph=0, playing=false;
+  function rs(){ W=cv.width=Math.round(cv.clientWidth*d); H=cv.height=Math.round(150*d); }
+  rs(); addEventListener("resize",rs,{passive:true});
+  var AC=window.AudioContext||window.webkitAudioContext, actx=null, gainNode=null, oscs=[];
+  b.addEventListener("click",function(){
+    if(!AC) return;
+    if(!actx){ actx=new AC(); gainNode=actx.createGain(); gainNode.gain.value=0; gainNode.connect(actx.destination);
+      [1,1.5,2,2.5,3,4].forEach(function(m,i){ var o=actx.createOscillator(); o.type=i%2?"sine":"triangle"; o.frequency.value=216*m;
+        var g=actx.createGain(); g.gain.value=.2/(i+1); o.connect(g); g.connect(gainNode); o.start(); oscs.push(o); }); }
+    if(actx.state==="suspended") actx.resume();
+    playing=!playing; var t=actx.currentTime;
+    gainNode.gain.cancelScheduledValues(t); gainNode.gain.linearRampToValueAtTime(playing?0.18:0,t+1.1);
+    b.textContent = playing ? "SILENCIAR" : "ATIVAR 432 HZ";
+  });
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(!cv.getClientRects().length) return;
+    if(cv.clientWidth*d!==W) rs(); ph+=0.02;
+    ctx2.clearRect(0,0,W,H);
+    for(var i=0;i<80;i++){ var amp=(Math.sin(i*0.35+ph*3)*0.5+0.5)*(Math.sin(i*0.07+ph)*0.5+0.5); var bh=amp*H*0.8+2;
+      ctx2.fillStyle="hsla("+(350-(i/80)*60)+",100%,"+(52+amp*20)+"%,.9)"; ctx2.fillRect(i*(W/80),H-bh,(W/80)*0.6,bh); }
+    ctx2.strokeStyle="rgba(255,212,92,.5)"; ctx2.beginPath();
+    for(var px=0;px<=W;px+=4){ var y=H/2+Math.sin(px/W*6.283*3+ph*2)*H*.17; px?ctx2.lineTo(px,y):ctx2.moveTo(px,y); } ctx2.stroke();
+  })();
+  return wrap;
+}
+function videoPanel(){
+  var wrap=document.createElement("div");
+  var cv=document.createElement("canvas"); cv.style.cssText="width:100%;height:200px;border:1px solid var(--line);border-radius:12px;background:#020208;display:block";
+  wrap.appendChild(cv);
+  var row=document.createElement("div"); row.className="row";
+  var b=document.createElement("button"); b.className="btn"; b.textContent="PAUSAR";
+  row.appendChild(b); wrap.appendChild(row);
+  var x=cv.getContext("2d"), W=0,H=0,d=Math.min(devicePixelRatio||1,2), t=0, play=true, stars=[];
+  function rs(){ W=cv.width=Math.round(cv.clientWidth*d); H=cv.height=Math.round(200*d);
+    stars=[]; for(var i=0;i<120;i++) stars.push({x:Math.random(),y:Math.random(),z:Math.random(),s:Math.random()*1.6+.3}); }
+  rs(); addEventListener("resize",rs,{passive:true});
+  b.addEventListener("click",function(){ play=!play; b.textContent= play?"PAUSAR":"REPRODUZIR"; });
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(!cv.getClientRects().length) return;
+    if(cv.clientWidth*d!==W) rs();
+    if(play) t+=0.016;
+    x.fillStyle="rgba(3,0,7,.45)"; x.fillRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){ var s=stars[i]; s.y+=(0.0006+s.z*0.0022); if(s.y>1)s.y=0;
+      x.globalAlpha=.25+s.z*.75; x.fillStyle=s.z>.8?"#65f7ff":(s.z>.5?"#ff285f":"#fff"); x.fillRect(s.x*W,s.y*H,s.s*d,s.s*d); }
+    x.globalAlpha=1;
+    var phase=Math.max(0,Math.sin(t*0.35));
+    if(phase<0.55){ var rp=Math.min(W,H)*(0.07+phase*0.5);
+      var pg=x.createRadialGradient(W/2-rp*.3,H/2-rp*.3,rp*.1,W/2,H/2,rp);
+      pg.addColorStop(0,"#ff5470"); pg.addColorStop(.55,"#8a0022"); pg.addColorStop(1,"#170009");
+      x.beginPath(); x.arc(W/2,H/2,rp,0,7); x.fillStyle=pg; x.fill(); x.strokeStyle="rgba(101,247,255,.6)"; x.lineWidth=1.6*d; x.stroke(); }
+    x.fillStyle="rgba(255,255,255,.55)"; x.font=(10*d)+"px "+MONO;
+    x.fillText("432 HZ · "+String(Math.floor(t*24)%1000).padStart(3,"0"),10*d,16*d);
+  })();
+  return wrap;
+}
+function sessionsPanel(){
+  var d=document.createElement("div");
+  d.innerHTML='<h2>Sessões — multitrack</h2>';
+  var p=document.createElement("p"); p.textContent="Pré-visualizações de 20 s (64 kbps) do master Judas. Os WAV completos vivem no projeto, fora da web.";
+  d.appendChild(p);
+  var names=[["instrumental","Instrumental"],["coros","Coros"],["coro_hi","Coro (alto)"],["coro_lo","Coro (baixo)"],["violin","Violino"],["violin_m","Violino (melodia)"],["mixA","Mix A"],["mixB","Mix B"]];
+  names.forEach(function(n){
+    var row=document.createElement("div"); row.className="row";
+    var lab=document.createElement("span"); lab.style.cssText="font-family:"+MONO+";font-size:10px;letter-spacing:.16em;min-width:120px;color:#9c96ab"; lab.textContent=n[1];
+    var au=document.createElement("audio"); au.controls=true; au.preload="none"; au.src="assets/audio/sessions/"+n[0]+".mp3"; au.style.cssText="flex:1;min-width:190px";
+    row.appendChild(lab); row.appendChild(au); d.appendChild(row);
+  });
+  return d;
+}
+function expPanel(){
+  var d=document.createElement("div");
+  d.innerHTML='<h2>A viagem espacial — 168 s</h2><p>A jornada completa (galáxia → planeta → diamante → chave → máquina → relíquias) corre no motor 3D da obra principal.</p>';
+  var row=document.createElement("div"); row.className="row";
+  var a=document.createElement("a"); a.className="btn"; a.href="index.html"; a.textContent="Abrir a obra (3D) →";
+  var n=document.createElement("span"); n.style.cssText="font-family:"+MONO+";font-size:10px;color:#6c6679"; n.textContent="Precisa WebGL.";
+  row.appendChild(a); row.appendChild(n); d.appendChild(row); return d;
+}
+function newsPanel(){
+  var d=document.createElement("div");
+  d.innerHTML='<h2>Newsletter — lista própria</h2><p>Registo local (sem servidor): os contactos ficam guardados neste dispositivo.</p>';
+  var f=document.createElement("form"); f.noValidate=true;
+  var ln=document.createElement("label"); ln.textContent="Nome";
+  var inn=document.createElement("input"); inn.id="nl-nome"; inn.type="text";
+  var le=document.createElement("label"); le.textContent="E-mail";
+  var ine=document.createElement("input"); ine.id="nl-email"; ine.type="email";
+  var b=document.createElement("button"); b.className="btn"; b.type="submit"; b.textContent="SUBSCREVER";
+  var ok=document.createElement("p"); ok.setAttribute("role","status");
+  var cnt=document.createElement("p"); cnt.style.cssText="font-family:"+MONO+";font-size:10px;color:#6c6679";
+  var KEY="belentani_news";
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||"[]"); }catch(e){ return []; } }
+  function show(){ cnt.textContent="Subscritores neste dispositivo: "+load().length; }
+  f.appendChild(ln); f.appendChild(inn); f.appendChild(le); f.appendChild(ine); f.appendChild(b); f.appendChild(ok); f.appendChild(cnt);
+  f.addEventListener("submit",function(e){
+    e.preventDefault();
+    var n=inn.value.trim(), m=ine.value.trim();
+    if(n.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)){ ok.style.color="#ff285f"; ok.textContent="Preenche nome e e-mail válido."; return; }
+    var list=load(); list.push({n:n,m:m,t:Date.now()});
+    try{ localStorage.setItem(KEY,JSON.stringify(list)); }catch(e2){}
+    ok.style.color="#54ffa8"; ok.textContent="Registado. Bem-vindo ao caos."; f.reset(); show();
+  });
+  show();
+  d.appendChild(f); return d;
+}
+function termPanel(){
+  var d=document.createElement("div"); d.className="term";
+  var out=document.createElement("div"); out.id="termOut";
+  var line=document.createElement("div");
+  line.innerHTML='<span style="color:#ff285f">caos@judas-core-07:~$&nbsp;</span>';
+  var inp=document.createElement("input"); inp.id="terminalInput"; inp.setAttribute("aria-label","Terminal"); inp.autocomplete="off";
+  line.appendChild(inp); d.appendChild(out); d.appendChild(line);
+  var hist=['<span style="color:#9c96ab">BELENTANI OS · terminal lírico. escreve <span style="color:#65f7ff">help</span>.</span>'];
+  function echo(s){ hist.push(s); out.innerHTML=hist.join("<br>"); out.scrollTop=out.scrollHeight; }
+  function run(raw){
+    var cmd=(raw||"").trim(); if(!cmd) return;
+    echo('<span class="in">caos@judas-core-07:~$ '+cmd.replace(/[<>&]/g,"")+'</span>');
+    var parts=cmd.split(/\s+/), c=parts[0].toLowerCase();
+    if(c==="help") echo("comandos: <b>lore</b> · <b>obras</b> · <b>audio</b> · <b>video</b> · <b>radio</b> · <b>prensa</b> · <b>booking</b> · <b>open &lt;app&gt;</b> · <b>freq</b> · <b>whoami</b> · <b>matriz</b> · <b>clear</b>");
+    else if(c==="lore"){ openWin("lore",APPS.lore.title,80,70,APPS.lore.w,APPS.lore.h,APPS.lore.build()); echo("abrindo o códice..."); }
+    else if(c==="obras"){ openWin("obras",APPS.obras.title,150,110,APPS.obras.w,APPS.obras.h,APPS.obras.build()); echo("catálogo aberto."); }
+    else if(c==="audio"){ openWin("audio",APPS.audio.title,220,150,APPS.audio.w,APPS.audio.h,APPS.audio.build()); echo("drone 432 pronto."); }
+    else if(c==="video"){ openWin("video",APPS.video.title,120,200,APPS.video.w,APPS.video.h,APPS.video.build()); echo("vídeo procedural a correr."); }
+    else if(c==="radio"){ openWin("radio",APPS.radio.title,260,120,APPS.radio.w,APPS.radio.h,APPS.radio.build()); echo("radio 432 no ar."); }
+    else if(c==="prensa"){ openWin("prensa",APPS.prensa.title,180,90,APPS.prensa.w,APPS.prensa.h,APPS.prensa.build()); echo("press-kit aberto."); }
+    else if(c==="booking"){ openWin("booking",APPS.booking.title,300,110,APPS.booking.w,APPS.booking.h,APPS.booking.build()); echo("formulário de contacto."); }
+    else if(c==="open"){ var a=(parts[1]||"").toLowerCase(); if(APPS[a]){ openWin(a,APPS[a].title,140,100,APPS[a].w,APPS[a].h,APPS[a].build()); echo("aberto: "+a); } else echo('<span class="err">app desconhecida: '+a+'</span>'); }
+    else if(c==="freq") echo("frequência-raiz: <b>432.00 Hz</b> · bio-pulse "+$("#bioPulse").textContent);
+    else if(c==="whoami") echo("belentani · artista e construtor · núcleo 04 judas-core-07");
+    else if(c==="matriz") echo("A Rocha · O Cronista · A Antena · O Artefato · The Human");
+    else if(c==="clear"){ hist=[]; out.innerHTML=""; }
+    else if(c==="sudo") echo('<span class="err">o caos não obedece a sudo.</span>');
+    else echo('<span class="err">comando não reconhecido: '+c.replace(/[<>&]/g,"")+' → tenta <b>help</b></span>');
+  }
+  inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){ run(inp.value); inp.value=""; } });
+  setTimeout(function(){ inp.focus(); },120);
+  return d;
+}
+
+/* ---------------- dock handlers ---------------- */
+$$(".app").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var id=btn.getAttribute("data-app"), a=APPS[id];
+    var off=(opened%4)*28;
+    openWin(id,a.title,a.x+off,a.y+off,a.w,a.h,a.build());
+  });
+});
+
+/* ---------------- teclado: atalhos ---------------- */
+addEventListener("keydown",function(e){
+  if(e.key==="Escape"){ var f=$$(".win").filter(function(w){return w.classList.contains("focus");})[0]; if(f&&f.parentNode) f.parentNode.removeChild(f); }
+  if(e.key==="`"||e.key==="Dead"){ openWin("caos",APPS.caos.title,200,170,APPS.caos.w,APPS.caos.h,APPS.caos.build()); }
+});
+
+/* ---------------- ESCRITÓRIO: ícones + menu de contexto ---------------- */
+var ACCENT=0;
+(function desktop(){
+  var dk=$("#desktop"); if(!dk) return;
+  var icons=[["lore","◈","LORE"],["obras","▦","OBRAS"],["audio","♪","AUDIO"],["video","▶","VÍDEO"],
+    ["radio","≈","RADIO 432"],["sessoes","≡","SESSÕES"],["experiencia","✵","EXPERIÊNCIA"],
+    ["prensa","✦","PRENSA"],["booking","✉","BOOKING"],["newsletter","✉","NEWSLETTER"],["caos",">_","CAOS"],
+    ["readme","◻","LEIA-ME"]];
+  function readmeHTML(){
+    return '<h2>BELENTANI OS</h2><p>Sistema operativo lírico-neón do caos que somos.</p>'
+      +'<h3>Como usar</h3><p>Um clique seleciona; duplo-clique (ou Enter) abre. Botão direito no ambiente de trabalho abre o menu.</p>'
+      +'<h3>Apps</h3><p>LORE · OBRAS · AUDIO · VÍDEO · RADIO 432 · SESSÕES · EXPERIÊNCIA · PRENSA · BOOKING · NEWSLETTER · CAOS.</p>'
+      +'<h3>Frequência-raiz</h3><p>432 Hz. Nenhuma página é terminal.</p>';
+  }
+  icons.forEach(function(ic){
+    var el=document.createElement("div"); el.className="dicon"; el.tabIndex=0;
+    el.innerHTML='<i>'+ic[1]+'</i><span>'+ic[2]+'</span>';
+    dk.appendChild(el);
+    function act(){
+      if(ic[0]==="readme"){ openWin("readme","LEIA-ME",170,90,470,340, readmeHTML()); return; }
+      var a=APPS[ic[0]]; if(a) openWin(ic[0],a.title,a.x,a.y,a.w,a.h,a.build());
+    }
+    el.addEventListener("click",function(e){ e.stopPropagation(); $$(".dicon").forEach(function(x){x.classList.remove("sel");}); el.classList.add("sel"); });
+    el.addEventListener("dblclick",act);
+    el.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); act(); } });
+  });
+  document.addEventListener("click",function(){ $$(".dicon").forEach(function(x){x.classList.remove("sel");}); hideCtx(); });
+  var ctx=$("#ctx");
+  function hideCtx(){ if(ctx) ctx.style.display="none"; }
+  function showCtx(x,y){
+    ctx.innerHTML="";
+    [
+      ["Abrir terminal CAOS",function(){ var a=APPS.caos; openWin("caos",a.title,a.x,a.y,a.w,a.h,a.build()); }],
+      ["Abrir OBRAS",function(){ var a=APPS.obras; openWin("obras",a.title,a.x,a.y,a.w,a.h,a.build()); }],
+      ["Abrir RADIO 432",function(){ var a=APPS.radio; openWin("radio",a.title,a.x,a.y,a.w,a.h,a.build()); }],
+      ["Fechar todas as janelas",function(){ $$(".win").forEach(function(w){ if(w.parentNode) w.parentNode.removeChild(w); }); }],
+      ["Mudar cor de acento",function(){ ACCENT=(ACCENT+1)%PAL.length; document.documentElement.style.setProperty("--red",PAL[ACCENT]); }]
+    ].forEach(function(it){
+      var b=document.createElement("button"); b.type="button"; b.textContent=it[0];
+      b.addEventListener("click",function(e){ e.stopPropagation(); it[1](); hideCtx(); });
+      ctx.appendChild(b);
+    });
+    ctx.style.left=Math.min(x, innerWidth-215)+"px"; ctx.style.top=Math.min(y, innerHeight-190)+"px"; ctx.style.display="block";
+  }
+  dk.addEventListener("contextmenu",function(e){ e.preventDefault(); showCtx(e.clientX,e.clientY); });
+  addEventListener("keydown",function(e){ if(e.key==="Escape") hideCtx(); });
+})();
+})();
+</script>
+</body>
+</html>

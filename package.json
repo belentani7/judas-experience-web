@@ -1,0 +1,52 @@
+{
+  "name": "judas-experience-web",
+  "version": "1.0.0",
+  "description": "BELENTANI — The Judas Experience. Universo visual procedural: planeta vivo, diamante espectral, chave dourada PBR e máquina orgânica em Three.js. Dark pop, 432 Hz.",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "build": "echo 'Static site - no build step'",
+    "start": "npx serve . -p 3000",
+    "test": "npx playwright test",
+    "test:ci": "npx playwright test --reporter=github",
+    "lint": "npx eslint . --ext .js,.html --format=compact --max-warnings=0",
+    "lint:fix": "npx eslint . --ext .js,.html --fix",
+    "typecheck": "echo 'No TypeScript - skipping'",
+    "a11y": "npx axe-core-cli http://localhost:3000 --tags wcag2aa",
+    "lighthouse": "npx lighthouse http://localhost:3000 --budget-path=./lighthouse-budget.json --output=html --output-path=./lighthouse-report.html",
+    "validate:spec": "python tools/validate-spec.py SPEC.md",
+    "validate:shaders": "python tools/validate-shaders.py",
+    "validate:convergence": "python tools/check-spec-convergence.py --spec SPEC.md --diff HEAD~1..HEAD",
+    "audit": "python tools/audit-production-readiness.py --repo . --level 2",
+    "update:threejs": "node tools/update-threejs.js",
+    "optimize:assets": "node tools/optimize-assets.js",
+    "deploy:preview": "npx vercel --token=$VERCEL_TOKEN",
+    "deploy:prod": "npx vercel --prod --token=$VERCEL_TOKEN"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "visual-experience",
+    "procedural",
+    "belentani",
+    "judas-experience"
+  ],
+  "author": "Belentani",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "axe-core": "^4.8.0",
+    "eslint": "^8.55.0",
+    "lighthouse": "^11.0.0",
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ]
+}
