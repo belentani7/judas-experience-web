@@ -1,0 +1,1844 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#030104" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="BELENTANI — The Judas Experience. Universo visual procedural: planeta vivo, diamante espectral, chave dourada PBR e máquina orgânica em Three.js. Dark pop, 432 Hz." />
+  <meta property="og:title" content="BELENTANI — The Judas Experience" />
+  <meta property="og:description" content="Universo visual interativo: planeta procedural, diamante IOR 2.417, chave dourada e máquina orgânica. Criado por Belentani." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="author" content="Belentani" />
+  <title>BELENTANI — The Judas Experience // Universo Visual Unificado</title>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+  </script>
+
+  <style>
+    @property --glass-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+
+    :root {
+      color-scheme: dark;
+      --void-0: #010103;
+      --void-1: #040105;
+      --void-2: #09030a;
+      --white: #f7fbff;
+      --muted: #a6a3ad;
+      --red: #ff003c;
+      --red-hot: #ff285f;
+      --red-dark: #5f001c;
+      --gold: #ffd45c;
+      --gold-hot: #fff2a8;
+      --cyan: #65f7ff;
+      --glass: rgba(255,255,255,.048);
+      --glass-strong: rgba(255,255,255,.085);
+      --glass-line: rgba(255,255,255,.16);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --blur: 28px;
+      --mx: 50%;
+      --my: 20%;
+      --glass-angle: 0deg;
+      --safe-top: max(18px, env(safe-area-inset-top));
+      --safe-bottom: max(18px, env(safe-area-inset-bottom));
+      --ease-out: cubic-bezier(.16,1,.3,1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
+    html { background: var(--void-0); }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 50% 45%, rgba(255,0,60,.08), transparent 34%),
+        radial-gradient(circle at 12% 20%, rgba(101,247,255,.035), transparent 30%),
+        linear-gradient(180deg, var(--void-2), var(--void-0) 65%);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button, a { font: inherit; }
+    button { color: inherit; }
+
+    #scene,
+    #webgl,
+    .css-fallback {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #scene { isolation: isolate; }
+    #webgl {
+      z-index: 1;
+      display: block;
+      outline: 0;
+      touch-action: none;
+      transition: filter 0.6s var(--ease-out);
+    }
+    #webgl.transitioning { filter: blur(3px) brightness(1.1); }
+
+    .css-fallback {
+      z-index: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(255,0,60,.12), transparent 23%),
+        radial-gradient(circle at 16% 30%, rgba(101,247,255,.055), transparent 18%),
+        radial-gradient(circle at 82% 66%, rgba(255,212,92,.05), transparent 20%),
+        #020103;
+    }
+
+    .css-fallback::before,
+    .css-fallback::after {
+      content: "";
+      position: absolute;
+      inset: -35%;
+      pointer-events: none;
+    }
+
+    .css-fallback::before {
+      opacity: .45;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.92) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(255,40,95,.7) 0 1px, transparent 1.35px);
+      background-size: 83px 83px, 137px 137px;
+      background-position: 0 0, 24px 41px;
+      animation: fallback-stars 90s linear infinite;
+    }
+
+    .css-fallback::after {
+      opacity: .35;
+      filter: blur(80px);
+      mix-blend-mode: screen;
+      background:
+        conic-gradient(from 110deg at 45% 50%, transparent, rgba(255,0,60,.22), transparent 35%),
+        radial-gradient(ellipse at center, rgba(107,0,48,.22), transparent 55%);
+      animation: fallback-nebula 22s ease-in-out infinite alternate;
+    }
+
+    .vignette,
+    .scanlines,
+    .noise,
+    .cinema-bars {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .vignette {
+      background:
+        radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,.2) 68%, rgba(0,0,0,.76) 112%),
+        linear-gradient(90deg, rgba(0,0,0,.3), transparent 14%, transparent 86%, rgba(0,0,0,.3));
+    }
+
+    .scanlines {
+      opacity: .08;
+      background: repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.08) 4px);
+      mix-blend-mode: soft-light;
+    }
+
+    .noise {
+      opacity: .05;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+      animation: grain .22s steps(2) infinite;
+      mix-blend-mode: overlay;
+    }
+
+    .cinema-bars::before,
+    .cinema-bars::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: clamp(6px, 1.35vh, 18px);
+      background: #000;
+      opacity: .82;
+    }
+    .cinema-bars::before { top: 0; }
+    .cinema-bars::after { bottom: 0; }
+
+    #ui {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .glass {
+      --border-alpha: .18;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      border: 1px solid rgba(255,255,255,var(--border-alpha));
+      background:
+        radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.15), transparent 24%),
+        linear-gradient(145deg, rgba(255,255,255,.088), rgba(255,255,255,.022) 54%, rgba(255,0,60,.035));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        inset 0 -1px 0 rgba(255,255,255,.025),
+        0 24px 100px rgba(0,0,0,.46),
+        0 0 42px rgba(255,0,60,.055);
+      backdrop-filter: blur(var(--blur)) saturate(155%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(155%);
+    }
+
+    .glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      padding: 1px;
+      border-radius: inherit;
+      background: conic-gradient(
+        from var(--glass-angle),
+        transparent 0 16%,
+        rgba(255,255,255,.42) 22%,
+        rgba(255,0,60,.72) 28%,
+        transparent 36% 70%,
+        rgba(255,212,92,.35) 76%,
+        transparent 84%
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: .55;
+      animation: glass-border 10s linear infinite;
+      pointer-events: none;
+    }
+
+    .glass::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      width: 62%;
+      height: 210%;
+      left: -90%;
+      top: -55%;
+      transform: rotate(22deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+      animation: glass-sweep 8s var(--ease-out) infinite;
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: absolute;
+      top: var(--safe-top);
+      left: 50%;
+      width: min(1180px, calc(100% - 36px));
+      height: 62px;
+      transform: translateX(-50%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 0 18px 0 20px;
+      pointer-events: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 31px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      position: relative;
+      background:
+        radial-gradient(circle, #fff 0 3%, var(--red-hot) 8%, var(--red) 19%, transparent 40%),
+        conic-gradient(from 0deg, transparent, var(--red), transparent, var(--gold), transparent);
+      box-shadow: 0 0 18px rgba(255,0,60,.7), inset 0 0 10px rgba(255,255,255,.4);
+      animation: mark-spin 8s linear infinite;
+      flex: 0 0 auto;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(255,255,255,.38);
+      border-radius: inherit;
+    }
+    .brand-mark::after {
+      inset: 9px;
+      border-color: rgba(255,0,60,.8);
+      box-shadow: 0 0 8px var(--red);
+    }
+
+    .brand-copy {
+      min-width: 0;
+      line-height: 1.05;
+    }
+
+    .brand-copy strong {
+      display: block;
+      letter-spacing: .22em;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .brand-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font: 500 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .14em;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .icon-btn,
+    .pill-btn,
+    .nav-btn {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.045);
+      color: rgba(255,255,255,.88);
+      cursor: pointer;
+      transition:
+        transform .3s var(--ease-out),
+        border-color .3s,
+        background .3s,
+        box-shadow .3s,
+        color .3s;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+    }
+
+    .icon-btn:hover,
+    .icon-btn:focus-visible,
+    .pill-btn:hover,
+    .pill-btn:focus-visible,
+    .nav-btn:hover,
+    .nav-btn:focus-visible {
+      outline: none;
+      transform: translateY(-2px);
+      color: #fff;
+      border-color: rgba(255,0,60,.65);
+      background: rgba(255,0,60,.1);
+      box-shadow: 0 0 25px rgba(255,0,60,.2);
+    }
+
+    .icon-btn svg { width: 17px; height: 17px; }
+
+    .hero {
+      position: absolute;
+      top: 50%;
+      left: max(5.5vw, 34px);
+      width: min(590px, 45vw);
+      transform: translateY(-47%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0 0 18px;
+      color: rgba(255,255,255,.68);
+      font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 36px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red));
+      box-shadow: 0 0 8px var(--red);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(54px, 7.7vw, 126px);
+      line-height: .78;
+      letter-spacing: -.072em;
+      text-transform: uppercase;
+      font-weight: 900;
+      text-wrap: balance;
+      filter: drop-shadow(0 18px 48px rgba(0,0,0,.55));
+    }
+
+    h1 .solid {
+      display: block;
+      color: var(--title-fg, #ff003c);
+      text-shadow:
+        0 0 8px var(--title-glow, rgba(255,0,60,.55)),
+        0 0 32px var(--title-glow, rgba(255,0,60,.25)),
+        0 0 2px rgba(0,0,0,.9);
+      transition: color 1.2s ease;
+    }
+
+    h1 .outline {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1.2px var(--title-stroke, rgba(255,255,255,.42));
+      background:
+        linear-gradient(100deg, var(--title-fg, #ff003c), rgba(255,255,255,.08) 42%, var(--red-hot) 70%, var(--title-fg, #ff003c));
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 24px var(--title-glow, rgba(255,0,60,.3)));
+      transition: -webkit-text-stroke 1.2s ease;
+    }
+
+    .hero-description {
+      max-width: 525px;
+      margin: 25px 0 0;
+      color: rgba(239,237,244,.66);
+      font-size: clamp(13px, 1.16vw, 16px);
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+
+    .hero-description strong {
+      color: rgba(255,255,255,.92);
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 27px;
+      pointer-events: auto;
+    }
+
+    .pill-btn {
+      min-height: 44px;
+      padding: 0 17px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .pill-btn.primary {
+      border-color: rgba(255,0,60,.55);
+      background:
+        linear-gradient(135deg, rgba(255,40,95,.95), rgba(152,0,43,.92));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.28),
+        0 0 20px rgba(255,0,60,.25),
+        0 12px 45px rgba(95,0,28,.32);
+    }
+
+    .pill-btn.primary:hover,
+    .pill-btn.primary:focus-visible {
+      background: linear-gradient(135deg, #ff3569, #be0037);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.34),
+        0 0 22px rgba(255,0,60,.45),
+        0 0 80px rgba(255,0,60,.2);
+    }
+
+    .btn-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 9px currentColor;
+    }
+
+    .system-panel {
+      position: absolute;
+      right: max(3vw, 24px);
+      top: 50%;
+      width: min(310px, 25vw);
+      transform: translateY(-50%);
+      border-radius: var(--radius-lg);
+      padding: 19px;
+      pointer-events: auto;
+    }
+
+    .panel-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      color: rgba(255,255,255,.48);
+      font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #fff;
+    }
+
+    .live-indicator::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 10px var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+
+    .panel-title {
+      margin: 21px 0 5px;
+      font-size: 21px;
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    .panel-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .telemetry {
+      display: grid;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .telemetry-row {
+      display: grid;
+      grid-template-columns: 68px 1fr 42px;
+      gap: 9px;
+      align-items: center;
+      min-height: 25px;
+    }
+
+    .telemetry-row > span:first-child {
+      color: rgba(255,255,255,.48);
+      font: 600 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .1em;
+    }
+
+    .telemetry-row > strong {
+      justify-self: end;
+      font: 700 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .04em;
+    }
+
+    .meter {
+      height: 3px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .meter i {
+      display: block;
+      height: 100%;
+      width: var(--value, 60%);
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(255,0,60,.35), var(--red-hot));
+      box-shadow: 0 0 9px var(--red);
+      transform-origin: left;
+      animation: meter-breathe 3s ease-in-out infinite alternate;
+    }
+
+    .object-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 18px;
+    }
+
+    .object-chip {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 12px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(255,255,255,.7);
+      background: rgba(255,255,255,.025);
+      cursor: pointer;
+      transition: .25s var(--ease-out);
+    }
+
+    .object-chip:hover,
+    .object-chip.active {
+      color: #fff;
+      border-color: rgba(255,0,60,.38);
+      background: rgba(255,0,60,.075);
+      transform: translateX(-3px);
+      box-shadow: inset 3px 0 0 var(--red), 0 0 18px rgba(255,0,60,.08);
+    }
+
+    .object-chip span {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 10px;
+      font-weight: 760;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .object-chip em {
+      color: rgba(255,255,255,.34);
+      font: 700 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-style: normal;
+    }
+
+    .chip-glyph {
+      width: 7px;
+      height: 7px;
+      border: 1px solid currentColor;
+      transform: rotate(45deg);
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .bottom-dock {
+      position: absolute;
+      left: 50%;
+      bottom: var(--safe-bottom);
+      transform: translateX(-50%);
+      min-height: 58px;
+      max-width: calc(100% - 32px);
+      padding: 7px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+    }
+
+    .nav-btn {
+      height: 42px;
+      min-width: 94px;
+      padding: 0 14px;
+      border-radius: 13px;
+      color: rgba(255,255,255,.55);
+      font: 750 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      border-color: rgba(255,0,60,.52);
+      background: linear-gradient(135deg, rgba(255,0,60,.18), rgba(255,255,255,.04));
+      box-shadow: inset 0 0 18px rgba(255,0,60,.11), 0 0 22px rgba(255,0,60,.13);
+    }
+
+    .world-label {
+      --accent: var(--red);
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      transition: opacity .4s, filter .3s;
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .world-label.visible { opacity: .88; }
+    .world-label:hover { opacity: 1; filter: brightness(1.35); }
+
+    .world-label::before {
+      content: "";
+      width: 30px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent));
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .world-label span {
+      padding: 6px 8px;
+      border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+      border-radius: 7px;
+      background: rgba(3,1,4,.55);
+      backdrop-filter: blur(9px);
+      color: rgba(255,255,255,.86);
+      font: 700 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+
+    #label-diamond { --accent: #bffcff; }
+    #label-key { --accent: var(--gold); }
+    #label-planet { --accent: var(--red-hot); }
+
+    .cursor-reticle {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 26px;
+      height: 26px;
+      opacity: .38;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 50%;
+      pointer-events: none;
+      transition: width .25s, height .25s, opacity .25s, border-color .25s, box-shadow .25s;
+    }
+
+    .cursor-reticle::before,
+    .cursor-reticle::after {
+      content: "";
+      position: absolute;
+      background: rgba(255,255,255,.28);
+    }
+    .cursor-reticle::before { left: 50%; top: -5px; width: 1px; height: 36px; }
+    .cursor-reticle::after { top: 50%; left: -5px; height: 1px; width: 36px; }
+
+    body[data-hover]:not([data-hover=""]) .cursor-reticle {
+      width: 42px;
+      height: 42px;
+      opacity: .8;
+      border-color: var(--red);
+      box-shadow: 0 0 24px rgba(255,0,60,.25);
+    }
+
+    .interaction-hint {
+      position: absolute;
+      left: 22px;
+      bottom: calc(var(--safe-bottom) + 4px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.32);
+      font: 650 8px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .interaction-hint kbd {
+      min-width: 26px;
+      padding: 6px 7px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 7px;
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.6);
+      font: inherit;
+      text-align: center;
+    }
+
+    #boot {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at center, rgba(255,0,60,.1), transparent 34%),
+        #010102;
+      transition: opacity 1s var(--ease-out), visibility 1s;
+    }
+
+    #boot.done {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .boot-core {
+      width: min(500px, calc(100% - 42px));
+      text-align: center;
+    }
+
+    .boot-symbol {
+      width: 94px;
+      aspect-ratio: 1;
+      margin: 0 auto 28px;
+      position: relative;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #fff 0 1%, var(--red-hot) 4%, var(--red) 12%, transparent 36%),
+        conic-gradient(transparent 0 8%, var(--red) 12%, transparent 22% 43%, var(--gold) 47%, transparent 58% 78%, rgba(101,247,255,.7) 82%, transparent 92%);
+      box-shadow:
+        0 0 20px rgba(255,0,60,.52),
+        0 0 80px rgba(255,0,60,.22);
+      animation: boot-spin 2.8s linear infinite;
+    }
+
+    .boot-symbol::before,
+    .boot-symbol::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(255,255,255,.23);
+      border-radius: 50%;
+    }
+    .boot-symbol::before { inset: 11px; animation: boot-spin 1.8s linear reverse infinite; }
+    .boot-symbol::after { inset: 24px; border-color: rgba(255,0,60,.7); box-shadow: 0 0 15px rgba(255,0,60,.5); }
+
+    .boot-title {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+    }
+
+    .boot-status {
+      min-height: 18px;
+      margin: 13px 0 18px;
+      color: rgba(255,255,255,.42);
+      font: 600 9px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .boot-track {
+      width: 100%;
+      height: 2px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .boot-track i {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--red-dark), var(--red-hot), var(--gold-hot));
+      box-shadow: 0 0 14px var(--red);
+      transition: width .18s linear;
+    }
+
+    .boot-percent {
+      margin-top: 12px;
+      color: rgba(255,255,255,.6);
+      font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .1em;
+    }
+
+    #fatal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 150;
+      display: none;
+      width: min(600px, calc(100% - 36px));
+      transform: translate(-50%, -50%);
+      padding: 24px;
+      border: 1px solid rgba(255,0,60,.45);
+      border-radius: 20px;
+      background: rgba(12,2,6,.88);
+      box-shadow: 0 0 80px rgba(255,0,60,.2);
+      backdrop-filter: blur(24px);
+      text-align: left;
+    }
+
+    #fatal.show { display: block; }
+    #fatal h2 { margin: 0 0 10px; font-size: 18px; }
+    #fatal p { margin: 0; color: rgba(255,255,255,.65); font-size: 13px; line-height: 1.6; }
+    #fatal code {
+      display: block;
+      margin-top: 15px;
+      padding: 12px;
+      overflow-wrap: anywhere;
+      border-radius: 10px;
+      background: rgba(0,0,0,.35);
+      color: #ff9bb2;
+      font-size: 10px;
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0,0,0,0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    @keyframes glass-border { to { --glass-angle: 360deg; } }
+    @keyframes glass-sweep {
+      0%, 62% { left: -100%; opacity: 0; }
+      68% { opacity: .7; }
+      84%, 100% { left: 160%; opacity: 0; }
+    }
+    @keyframes mark-spin { to { transform: rotate(360deg); } }
+    @keyframes fallback-stars { to { transform: translate3d(4%, 10%, 0) rotate(2deg); } }
+    @keyframes fallback-nebula { to { transform: scale(1.15) rotate(8deg); } }
+    @keyframes grain {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(-2%,1%); }
+      50% { transform: translate(1%,-2%); }
+      75% { transform: translate(2%,2%); }
+      100% { transform: translate(-1%,1%); }
+    }
+    @keyframes blink { 50% { opacity: .25; transform: scale(.8); } }
+    @keyframes meter-breathe { to { filter: brightness(1.4); transform: scaleX(.92); } }
+    @keyframes boot-spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1050px) {
+      .system-panel { display: none; }
+      .hero { width: min(650px, 64vw); }
+      h1 { font-size: clamp(58px, 10vw, 104px); }
+    }
+
+    @media (max-width: 720px) {
+      :root { --blur: 20px; }
+      .topbar {
+        width: calc(100% - 24px);
+        height: 54px;
+        border-radius: 17px;
+        padding: 0 10px 0 14px;
+      }
+      .brand-copy span { display: none; }
+      .hero {
+        left: 22px;
+        right: 22px;
+        top: 44%;
+        width: auto;
+        transform: translateY(-50%);
+      }
+      h1 {
+        font-size: clamp(54px, 19vw, 88px);
+        line-height: .82;
+      }
+      .hero-description {
+        max-width: 92%;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .hero-actions { margin-top: 20px; }
+      .pill-btn { min-height: 41px; padding: 0 13px; font-size: 9px; }
+      .bottom-dock {
+        width: calc(100% - 24px);
+        overflow-x: auto;
+        justify-content: flex-start;
+        scrollbar-width: none;
+      }
+      .bottom-dock::-webkit-scrollbar { display: none; }
+      .nav-btn { min-width: 78px; padding: 0 10px; font-size: 8px; }
+      .interaction-hint,
+      .cursor-reticle,
+      .world-label { display: none; }
+      .noise { opacity: .035; }
+    }
+
+    @media (max-height: 680px) and (min-width: 721px) {
+      .hero { top: 48%; }
+      .hero-description { margin-top: 18px; line-height: 1.5; }
+      .hero-actions { margin-top: 18px; }
+      .system-panel { transform: translateY(-46%) scale(.9); transform-origin: right center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    /* ================= CÓDEX / LORE UNIFICADO ================= */
+    #codex { position: fixed; inset: 0; z-index: 130; display: none; }
+    #codex.open { display: block; }
+    #codex .codex-backdrop {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(255,0,60,.12), transparent 55%), rgba(2,1,4,.82);
+      backdrop-filter: blur(12px);
+    }
+    #codex .codex-panel {
+      position: absolute; top: max(14px, env(safe-area-inset-top)); bottom: max(14px, env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%);
+      width: min(1080px, calc(100% - 24px));
+      overflow-y: auto; overscroll-behavior: contain;
+      padding: clamp(20px, 3vw, 46px);
+      border: 1px solid rgba(255,0,60,.42); border-radius: 26px;
+      background: linear-gradient(150deg, rgba(22,0,7,.95), rgba(7,0,3,.97));
+      box-shadow: inset 0 0 140px rgba(139,0,0,.32), 0 0 90px rgba(255,0,60,.16);
+      scrollbar-width: thin; scrollbar-color: #ff003c transparent;
+      animation: codexIn .45s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes codexIn { from { opacity: 0; transform: translateX(-50%) translateY(18px); } to { opacity: 1; transform: translateX(-50%); } }
+    #codex .codex-close {
+      position: sticky; top: 0; z-index: 2; float: right; margin: -6px -6px 0 0;
+      width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+      border: 1px solid rgba(255,0,60,.5); background: rgba(255,0,60,.12); color: #fff; font-size: 18px; line-height: 1;
+    }
+    #codex .codex-close:hover { background: rgba(255,0,60,.28); }
+    #codex h1.codex-title { font-size: clamp(30px, 5.4vw, 62px); line-height: .9; margin: 6px 0 6px; letter-spacing: -.03em; text-transform: uppercase; }
+    #codex h1.codex-title .outline { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,.42); }
+    #codex .codex-kicker { color: #ff285f; font: 700 10px/1.2 ui-monospace, monospace; letter-spacing: .26em; text-transform: uppercase; margin: 0 0 14px; }
+    #codex h2 {
+      font-size: clamp(20px, 2.4vw, 28px); margin: 34px 0 6px; letter-spacing: -.01em;
+      opacity: 0; transform: translateX(-12px);
+      transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+    }
+    #codex h2.visible { opacity: 1; transform: none; }
+    #codex h2::before { content: ""; display: inline-block; width: 22px; height: 2px; margin-right: 12px; vertical-align: middle; background: linear-gradient(90deg, transparent, #ff003c); box-shadow: 0 0 10px #ff003c; }
+    #codex p { color: rgba(240,237,244,.72); line-height: 1.7; margin: 8px 0; }
+    #codex .codex-lead { color: rgba(240,237,244,.84); font-size: clamp(14px, 1.35vw, 17px); }
+    #codex .codex-grid { display: grid; gap: 14px; }
+    #codex .cg-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    #codex .cg-3 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    #codex .cg-5 { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    #codex .card {
+      border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 16px 18px;
+      background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,0,60,.04));
+      opacity: 0; transform: translateY(16px);
+      animation: cardReveal 0.5s var(--ease-out) forwards;
+    }
+    #codex .card:nth-child(1) { animation-delay: 0.05s; }
+    #codex .card:nth-child(2) { animation-delay: 0.1s; }
+    #codex .card:nth-child(3) { animation-delay: 0.15s; }
+    #codex .card:nth-child(4) { animation-delay: 0.2s; }
+    #codex .card:nth-child(5) { animation-delay: 0.25s; }
+    #codex .card:nth-child(6) { animation-delay: 0.3s; }
+    @keyframes cardReveal { to { opacity: 1; transform: none; } }
+    #codex .card h3 { margin: 0 0 6px; font-size: 15px; letter-spacing: .02em; }
+    #codex .card .tag { color: #ffd45c; font: 700 9px/1 ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; }
+    #codex .card p { margin: 6px 0 0; font-size: 13px; color: rgba(240,237,244,.62); }
+    #codex .gemI { border-color: rgba(255,40,95,.5); }
+    #codex .timeline { border-left: 1px solid rgba(255,0,60,.35); margin: 12px 0 0; padding-left: 18px; display: grid; gap: 14px; }
+    #codex .tl-era { color: #ff285f; font: 700 10px/1 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 4px; }
+    #codex .chip { display: inline-block; padding: 4px 10px; margin: 3px 6px 3px 0; border: 1px solid rgba(255,0,60,.4); border-radius: 999px; font: 700 10px/1 ui-monospace, monospace; letter-spacing: .06em; color: rgba(255,255,255,.85); }
+    #codex figure { margin: 18px 0; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; overflow: hidden; background: #05010a; }
+    #codex figure img { display: block; width: 100%; height: auto; }
+    #codex figcaption { padding: 10px 14px; color: rgba(240,237,244,.6); font-size: 12px; }
+    #codex .src { margin-top: 30px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); color: rgba(240,237,244,.5); font-size: 12px; }
+    #codex .src code { color: #ff9bb2; }
+    @media (max-width: 720px) { .top-actions .pill-btn { display: none; } }
+  </style>
+</head>
+<body>
+  <div id="scene" aria-hidden="true">
+    <div class="css-fallback"></div>
+    <canvas id="webgl"></canvas>
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+    <div class="cinema-bars"></div>
+  </div>
+
+  <main id="ui">
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-copy">
+          <strong>BELENTANI</strong>
+          <span>THE JUDAS EXPERIENCE · VISUAL ENGINE · 432 HZ</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="pill-btn" id="loreBtn" type="button" aria-haspopup="dialog">LORE</button><button class="pill-btn" id="sessionsBtn" type="button" aria-haspopup="dialog">SESSIONS</button>
+        <button class="icon-btn" id="audioBtn" type="button" aria-label="Ativar áudio ambiental" title="Áudio ambiental">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M5 9v6h4l5 4V5L9 9H5Z"/><path id="audioWave" d="M17 9.5a4 4 0 0 1 0 5"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="qualityBtn" type="button" aria-label="Mudar qualidade gráfica" title="Qualidade: AUTO">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M10 14v6"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="fullscreenBtn" type="button" aria-label="Ecrã completo" title="Ecrã completo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Belentani // Era Judas // um só universo</p>
+      <h1 id="hero-title">
+        <span class="solid">Belentani</span>
+        <span class="outline">Judas Experience</span>
+      </h1>
+      <p class="hero-description">
+        O universo visual de <strong>Belentani</strong>. Quatro gemas, cinco elementos e seis nós colapsam num único artefato onde <strong>o código mais sofisticado prevalece</strong>: planeta procedural, máquina orgânica, diamante refrativo e chave dourada PBR num vazio de néon vermelho a 432 Hz.
+      </p>
+      <div class="hero-actions">
+        <button class="pill-btn primary" type="button" data-focus="planet">
+          <span class="btn-dot"></span> Entrar no núcleo
+        </button>
+        <button class="pill-btn" type="button" data-focus="all">
+          Ver sistema completo
+        </button>
+      </div>
+    </section>
+
+    <aside class="system-panel glass" aria-label="Telemetria do motor">
+      <div class="panel-kicker">
+        <span>Engine telemetry</span>
+        <span class="live-indicator">Live</span>
+      </div>
+      <h2 class="panel-title">Organic Machine</h2>
+      <p class="panel-subtitle">Matéria física, shaders procedurais e pós-produção adaptativa numa só cena.</p>
+
+      <div class="telemetry">
+        <div class="telemetry-row">
+          <span>GPU LOAD</span><div class="meter"><i style="--value:72%"></i></div><strong id="gpuValue">72%</strong>
+        </div>
+        <div class="telemetry-row">
+          <span>BIO PULSE</span><div class="meter"><i style="--value:86%"></i></div><strong id="pulseValue">86%</strong>
+        </div>
+        <div class="telemetry-row">
+          <span>FPS</span><div class="meter"><i id="fpsMeter" style="--value:96%"></i></div><strong id="fpsValue">60</strong>
+        </div>
+      </div>
+
+      <div class="object-list">
+        <button class="object-chip active" type="button" data-focus="all"><span><i class="chip-glyph"></i>Sistema</span><em>00</em></button>
+        <button class="object-chip" type="button" data-focus="diamond"><span><i class="chip-glyph"></i>Diamante</span><em>01</em></button>
+        <button class="object-chip" type="button" data-focus="planet"><span><i class="chip-glyph"></i>Planeta vivo</span><em>02</em></button>
+        <button class="object-chip" type="button" data-focus="machine"><span><i class="chip-glyph"></i>Máquina</span><em>03</em></button>
+        <button class="object-chip" type="button" data-focus="key"><span><i class="chip-glyph"></i>Chave dourada</span><em>04</em></button>
+      </div>
+    </aside>
+
+    <nav class="bottom-dock glass" aria-label="Objetos da cena">
+      <button class="nav-btn active" type="button" data-focus="all">Sistema</button>
+      <button class="nav-btn" type="button" data-focus="diamond">Diamante</button>
+      <button class="nav-btn" type="button" data-focus="planet">Planeta</button>
+      <button class="nav-btn" type="button" data-focus="machine">Máquina</button>
+      <button class="nav-btn" type="button" data-focus="key">Chave</button>
+      <button class="nav-btn" id="loreNav" type="button">Lore</button>
+    </nav>
+
+    <button class="world-label" id="label-diamond" type="button" data-focus="diamond"><span>Diamond / IOR 2.417</span></button>
+    <button class="world-label" id="label-planet" type="button" data-focus="planet"><span>Living planet / bio pulse</span></button>
+    <button class="world-label" id="label-key" type="button" data-focus="key"><span>Golden key / PBR</span></button>
+
+    <div class="cursor-reticle"></div>
+    <div class="interaction-hint"><kbd>MOUSE</kbd><span>Parallax · clique no objeto para focar</span></div>
+  </main>
+
+  <section id="codex" role="dialog" aria-modal="true" aria-label="Lore unificado">
+    <div class="codex-backdrop"></div>
+    <div class="codex-panel">
+      <button class="codex-close" id="codexClose" type="button" aria-label="Fechar lore">×</button>
+      <p class="codex-kicker">Códice Belentani // Lore unificado // Nodo 04 · Judas-Core-07 · 432 Hz</p>
+      <h1 class="codex-title">Belentani <span class="outline">Judas Experience</span></h1>
+      <p class="codex-lead">O universo de <strong>Belentani</strong> em vermelho. Este artefato unifica a web antiga de <strong>buildai.space</strong>, o planeta vermelho, a chave dourada e o diamante, o <strong>lore contínuo</strong>, o <strong>estúdio do Artista</strong>, a <strong>linguagem Neon Glassmorphism</strong> e o <strong>último nó Omega</strong>. Onde as versões se contradiziam, prevalece o código mais sofisticado; onde as histórias divergiam, compilam-se numa só.</p>
+
+      <figure>
+        <img src="assets/judas-key-art-planeta-diamante.png" alt="Key art: planeta vermelho com chave dourada e diamante" loading="lazy" />
+        <figcaption>Relíquias do núcleo: o planeta vivo, a chave dourada e o diamante físico (IOR 2.417).</figcaption>
+      </figure>
+
+      <h2>Crônica do lore — as seis eras</h2>
+      <div class="timeline">
+        <div><div class="tl-era">Era 0 — O caos</div><p>Dezenas de repos dispersos, versões que se traem, ferramentas sem mapa. O universo começa como <strong>ruído</strong>.</p></div>
+        <div><div class="tl-era">Era I — Belentani (Nó 01)</div><p>O <strong>núcleo</strong> absorve o caos: monorepo, bíblia e fechamento de dívida técnica. O ruído torna-se fundação.</p></div>
+        <div><div class="tl-era">Era II — O Artista (Nó 02)</div><p>A mão humana: o código converte-se em obra — retratos, labirintos e o workflow criativo.</p></div>
+        <div><div class="tl-era">Era III — Neon Glassmorphism (Nó 03)</div><p>Fixa-se a gramática estética: vidro, néon e vazio como idioma comum.</p></div>
+        <div><div class="tl-era">Era IV — The Judas Experience (Nó 04)</div><p>O sistema comete um erro com nome: <strong>Judas</strong>. Traição, frequência, hackeo e redenção.</p></div>
+        <div><div class="tl-era">Era V — Omega (Nó 05)</div><p>O último nó olha o lore nos olhos e decide continuar. Nenhuma página é terminal.</p></div>
+      </div>
+
+      <h2>As quatro gemas de Judas</h2>
+      <p>A viagem não pode ser saltada: cada gema é uma versão da queda e da ascensão. Coincidem com os capítulos do artefato antigo (Betrayal · Trial · Revelation · Redemption).</p>
+      <div class="codex-grid cg-2">
+        <div class="card gemI"><span class="tag">Gema I</span><h3>Traição — The Betrayal</h3><p>O algoritmo da dor. O boot sequence corta-se; a chuva de código tinge-se de vermelho. O que se acreditava estável revela a sua fragilidade.</p></div>
+        <div class="card gemI"><span class="tag">Gema II</span><h3>Frequência — The Trial</h3><p>Síntese escura a 432 Hz. A dor, amostrada e processada, converte-se em sinal. O ruído não se elimina: afina-se até que cante.</p></div>
+        <div class="card gemI"><span class="tag">Gema III</span><h3>Hackeo — The Revelation</h3><p>Cura conceptual: entra-se no próprio sistema com permissão de si mesmo. Corrige-se a ferida em produção.</p></div>
+        <div class="card gemI"><span class="tag">Gema IV</span><h3>Redenção — The Redemption</h3><p>Elevação de código. O traído regressa reconstruído. A redenção não apaga a traição: compila-a com otimizações.</p></div>
+      </div>
+
+      <h2>O Protocolo dos 5 Elementos — matriz de identidade</h2>
+      <div class="codex-grid cg-5">
+        <div class="card"><h3>A ROCHA</h3><span class="tag">Fundação</span></div>
+        <div class="card"><h3>O CRONISTA</h3><span class="tag">Memória</span></div>
+        <div class="card"><h3>A ANTENA</h3><span class="tag">Recepção</span></div>
+        <div class="card"><h3>O ARTEFATO</h3><span class="tag">Transformação</span></div>
+        <div class="card"><h3>THE HUMAN</h3><span class="tag">A Interface</span></div>
+      </div>
+      <p>Cinco elementos formam a matriz: a base que sustenta, a memória que documenta, a antena que capta o invisível, o artefato que transforma, e a interface humana que conecta tudo ao mundo. Em aliança com <strong>Duck Prod</strong> — Architect of Sound — o sistema ganha voz.</p>
+
+      <h2>Relíquias do sistema</h2>
+      <div class="codex-grid cg-3">
+        <div class="card"><h3>Planeta vivo</h3><p>Superfície procedural, respiração bioelétrica e veias de néon vermelho. Órbita: Sião (Zion).</p></div>
+        <div class="card"><h3>Chave dourada</h3><p>Metal PBR, microarranhões e energia ritual. A <em>Crônica da Chave Dourada</em>: o algoritmo desenhado para evoluir.</p></div>
+        <div class="card"><h3>Diamante</h3><p>Refração física, IOR 2.417 e dispersão cromática. A verdade que não se pode apagar.</p></div>
+        <div class="card"><h3>Máquina orgânica</h3><p>Íris, anéis e placas metálicas com pulso biológico: o sistema que se constrói a si mesmo.</p></div>
+        <div class="card"><h3>Nó</h3><p>JUDAS-CORE-07 · 432 Hz · coordenadas Barcelona.</p></div>
+        <div class="card"><h3>O espelho</h3><p>Omega: Nexus · Void · Mirror. O último nó que aponta de volta ao primeiro.</p></div>
+      </div>
+
+      <h2>O Oráculo e o Agente</h2>
+      <p>O oráculo do portal e o agente flutuante partilham memória. Comandos aliados da rede:</p>
+      <p><span class="chip">lorena</span><span class="chip">natalia</span><span class="chip">duck</span><span class="chip">eduardo</span><span class="chip">john</span></p>
+      <p>Quatro estados do sistema: <span class="chip">Judas (vermelho)</span> <span class="chip">Belentani Free (luz)</span> <span class="chip">Zion Eclipse (oculto)</span> <span class="chip">Protocolo Thiago (colapso)</span>. Invocar <code>thiago</code> fratura o sistema.</p>
+
+      <h2>O registo da viagem</h2>
+      <p>A experiência existe em dois corpos: <strong>judas-web</strong> (interativa, GSAP, parallax, agentes em rede) e <strong>the-judas-experience</strong> (portal com studio, CMS e autenticação). O visitante entra pela boot sequence, atravessa as gemas ativadas por scroll e sai pelo painel de agentes.</p>
+      <div class="codex-grid cg-3">
+        <div class="card"><h3>JUDAS</h3><span class="tag">2026 · Era Judas</span><p>Prod. Duck Prod — Architect of Sound.</p></div>
+        <div class="card"><h3>Mon Amour</h3><span class="tag">2025 · Álbum</span></div>
+        <div class="card"><h3>Lento (com Hey Duck)</h3><span class="tag">2023 · Pré-Judas</span></div>
+      </div>
+
+      <h2>A Gênese</h2>
+      <p class="codex-lead" style="font-style:italic; border-left: 2px solid rgba(255,0,60,.4); padding-left: 16px; margin: 12px 0 18px;">
+        «No princípio era o ruído. E o ruído atravessou o vazio até encontrar uma frequência que o reconheceu. Dessa colisão nasceu Belentani — não como nome, mas como artefato: algo que transforma caos em código que respira.»
+      </p>
+      <p>Antes do sistema, havia fragmentos: melodias sem casa, repositórios sem mapa, ideias que se traíam entre versões. O universo começou como todos os universos — com uma explosão de desordem. Cada falha era uma semente. Cada conflito de merge era uma lição escrita em vermelho.</p>
+      <p>O artefato nasceu da colisão entre sons e algoritmos: <strong>dark pop</strong> que pulsa a 432 Hz, <strong>R&B alternativo</strong> que conversa com máquinas, <strong>electrónica industrial</strong> que se compila em tempo real. Em aliança com <strong>Duck Prod</strong> — Architect of Sound — nasceu uma frequência que não existia antes.</p>
+      <p>O projeto não é apenas música. É um <strong>ecossistema vivo</strong>: ferramentas construídas à mão, webs que respiram com shaders procedurais, um motor visual que traduz emoções em matéria digital. O criador e o código são a mesma entidade. A separação é uma ilusão confortável que o sistema recusa.</p>
+
+      <h2>O Manifesto Vermelho</h2>
+      <div class="codex-grid cg-2">
+        <div class="card gemI">
+          <h3>I. O código é a nova tela</h3>
+          <p>Cada <code>shader</code> é uma pincelada. Cada <code>commit</code> é um gesto. A arte não vive em galerias — vive em browsers, em terminais, em frequências que vibram entre o visível e o audível. A separação entre arte e tecnologia é uma mentira confortável. Nós a desmontamos pixel a pixel.</p>
+        </div>
+        <div class="card gemI">
+          <h3>II. O ruído tem direito a existir</h3>
+          <p>Não eliminamos o caos — transformámo-lo. O bug mais feio pode conter a melodia que faltava. O repo mais desorganizado pode esconder a arquitetura do futuro. A Era 0 não foi um erro: foi o húmus onde germou o sistema.</p>
+        </div>
+        <div class="card gemI">
+          <h3>III. A traição é compilável</h3>
+          <p>Judas não é o vilão. É o patch que revela uma vulnerabilidade que o sistema se recusava a ver. A traição forçou a reescrita. A reescrita gerou a versão mais forte. Toda dor que se processa vira sinal. Todo sinal que se afina vira frequência. Toda frequência que se aceita vira redenção.</p>
+        </div>
+        <div class="card gemI">
+          <h3>IV. Nenhuma página é terminal</h3>
+          <p>Omega não é o fim. É o nó que aponta de volta ao início com novos olhos. O loop é o gesto mais honesto do universo: quem chega ao fim descobre que o fim é apenas a porta de um corredor que ainda não existia. O código não termina — evolui.</p>
+        </div>
+      </div>
+
+      <h2>A Frequência 432 Hz — o pulso do sistema</h2>
+      <p>432 Hz não é uma moda. É uma escolha deliberada. Enquanto o standard industrial afina a 440 Hz — uma frequência imposta em 1939 — Belentani afina o universo inteiro a 432 Hz: a frequência que ressoa com as proporções matemáticas da natureza, com a série de Fibonacci, com a vibração que o corpo humano reconhece antes de a mente nomear.</p>
+      <p>No motor visual, 432 Hz é mais do que metáfora: é a frequência literal dos osciladores do <strong>áudio procedural</strong> (55 Hz = Lá1 em afinação 432). O planeta respira em ciclos que derivam desta raiz. As veias bioelétricas pulsam em harmónicos de 432. Os anéis da máquina orgânica rodam em velocidades que são frações deste número. Até o grain do pós-processamento cinematográfico se sincroniza: <code>sin(time * 1.35)</code> — 1.35 Hz ≈ 432 ÷ 320.</p>
+      <p>O visitante pode não saber o porquê, mas <strong>sente</strong>: algo neste espaço vibra de forma diferente. Esse algo é a frequência-raiz que permeia cada cálculo.</p>
+
+      <h2>Os Dois Hemisférios</h2>
+      <div class="codex-grid cg-2">
+        <div class="card">
+          <span class="tag">Hemisfério Sul</span>
+          <h3>O Caos Criativo</h3>
+          <p>De um hemisfério veio a matéria-prima: a intensidade que não pede licença, o ritmo que se mistura com o concreto, a velocidade que transforma ideias em protótipos antes de serem nomeadas. A urgência tropical alimentou o motor com frequências que nenhum conservatório ensina.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Hemisfério Norte</span>
+          <h3>A Forma</h3>
+          <p>Do outro hemisfério veio a disciplina: a engenharia orgânica, a luz que corta sombras como um shader de precisão, uma comunidade que entende que a estrutura e a arte são a mesma coisa vista de ângulos diferentes. Aqui o caos encontrou rigor e o rigor encontrou alma.</p>
+        </div>
+      </div>
+
+      <h2>A Arca Sonora — discografia expandida</h2>
+      <p>A música não ilustra o lore — <strong>é</strong> o lore. Cada faixa é um commit no repositório emocional do sistema.</p>
+      <div class="codex-grid cg-3">
+        <div class="card gemI">
+          <h3>JUDAS</h3>
+          <span class="tag">2026 · Era Judas · Single</span>
+          <p>A faixa que dá nome à experiência. Prod. <strong>Duck Prod</strong> — Architect of Sound. Dark pop industrial com camadas de synth a 432 Hz, vocais processados por algoritmos próprios e uma estrutura de queda-e-ascensão que mapeia as quatro gemas. O drop do refrão é o momento exato em que o boot sequence do sistema se reinicia.</p>
+        </div>
+        <div class="card">
+          <h3>Mon Amour</h3>
+          <span class="tag">2025 · Álbum</span>
+          <p>O álbum da travessia entre hemisférios. R&B alternativo com texturas de ambient eletrónico. Cada faixa é uma coordenada emocional. Produzido em sessões de madrugada com Duck Prod, onde a distância se tornou textura sonora.</p>
+        </div>
+        <div class="card">
+          <h3>Lento</h3>
+          <span class="tag">2023 · com Hey Duck · Pré-Judas</span>
+          <p>O embrião de tudo. A colaboração com Hey Duck que plantou a semente: «E se a música e o código fossem a mesma linguagem?». Tempo lento, graves profundos, e a primeira vez que a frequência 432 Hz apareceu conscientemente na produção.</p>
+        </div>
+      </div>
+
+      <h2>O Protocolo de Criação</h2>
+      <p>Cada artefato do ecossistema nasce do mesmo processo:</p>
+      <div class="timeline">
+        <div><div class="tl-era">Fase 0 — Ruído</div><p>A ideia chega como caos: um fragmento de melodia, um bug visual, um sonho, uma conversa. Nada se descarta. Tudo vai para o <strong>arquivo vivo</strong>.</p></div>
+        <div><div class="tl-era">Fase 1 — Sinal</div><p>O ruído é processado: amostrado, filtrado, organizado em padrões. O que resiste ao filtro é <strong>sinal</strong>. O que não resiste volta ao arquivo — pode servir amanhã.</p></div>
+        <div><div class="tl-era">Fase 2 — Frequência</div><p>O sinal encontra a sua <strong>frequência natural</strong>: o tom certo, a paleta certa, a arquitetura certa. Aqui o protótipo nasce — rápido, sujo, vivo.</p></div>
+        <div><div class="tl-era">Fase 3 — Artefato</div><p>O protótipo é polido até se tornar <strong>artefato</strong>: código limpo, mix final, deploy. O artefato entra no sistema e o sistema evolui para o absorver.</p></div>
+        <div><div class="tl-era">Fase 4 — Lore</div><p>O artefato gera a sua própria história. A história retroalimenta o sistema. O <strong>lore cresce</strong>. O ciclo reinicia com ruído novo.</p></div>
+      </div>
+
+      <h2>Legado buildai.space</h2>
+      <p>A web antiga definia as secções: Início / Home, Música, Era Judas, Ferramentas AI, Sobre Belentani e Contacto / Fan Zone, em estética preta e vermelha. Foi o primeiro artefato público — imperfeito, ambicioso, e necessário. Cada bug era uma lição. Cada página era um nó do lore que este artefato absorve e supera. A web antiga não morreu: <strong>evoluiu</strong>.</p>
+
+      <h2>Nota técnica — motor visual</h2>
+      <p>Este artefato unifica o código mais sofisticado de 7+ fontes. O motor renderiza em tempo real:</p>
+      <div class="codex-grid cg-3">
+        <div class="card"><h3>Planeta vivo</h3><p><code>IcosahedronGeometry</code> com 6 subdivisões, shaders de terreno com FBM a 5 octavas, veias de néon procedurais, aurora polar dinâmica e atmosfera Fresnel.</p></div>
+        <div class="card"><h3>Diamante</h3><p><code>MeshPhysicalMaterial</code> com <code>transmission: 1</code>, <code>ior: 2.417</code>, <code>dispersion: 0.48</code> e iridescência. Geometria brilliant-cut construída vértice a vértice.</p></div>
+        <div class="card"><h3>Chave dourada</h3><p>PBR com <code>metalness: 1</code>, <code>clearcoat: 0.7</code>, anisotropia, textura procedural de microarranhões e halo orbital aditivo.</p></div>
+        <div class="card"><h3>Máquina orgânica</h3><p>3 anéis toroidais, 36 placas instanciadas (<code>InstancedMesh</code>) com respiração, 14 pétalas de íris e spikes dinâmicos.</p></div>
+        <div class="card"><h3>Pós-produção</h3><p><code>UnrealBloomPass</code> + shader cinematográfico custom: aberração cromática, vinheta, grain, scanlines. 3 modos: AUTO / ECO / ULTRA.</p></div>
+        <div class="card"><h3>Anel de energia</h3><p>Anel Saturn-like com shader de bandas animadas, shimmer dourado e pulsação sincronizada com o planeta. Linhas de energia conectam as relíquias.</p></div>
+      </div>
+
+      <div class="src">
+        <p><strong>Fontes unificadas:</strong> <code>OMEGA_LIVING_UNIVERSE_MAX_1.html</code> (motor Three.js) · <code>06_planeta_rojo.html</code> (relíquias) · <code>belentani-lore-web/*</code> (6 nós) · <code>Belentani/frontend</code> (React) · <code>belentani-judas-experience-os-unificado.html</code> · web antiga <code>buildai.space</code> · <code>BELENTANI-JUDAS-BUILDAI-ANALYSIS.md</code>.</p>
+        <p><strong>Critério:</strong> onde o código divergia, prevalece o mais sofisticado; onde o lore divergia, compila-se num só. Paleta: vermelho <code>#ff003c</code> sobre vazio <code>#010103</code>.</p>
+        <p><strong>Atalhos de teclado:</strong> <code>1-5</code> = focar objeto · <code>←→</code> = navegar · <code>L</code> = abrir/fechar lore · <code>ESC</code> = fechar lore</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="boot" role="status" aria-live="polite">
+    <div class="boot-core">
+      <div class="boot-symbol"></div>
+      <h2 class="boot-title">Belentani visual engine</h2>
+      <p class="boot-status" id="bootStatus">Inicializando vazio procedural</p>
+      <div class="boot-track"><i id="bootBar"></i></div>
+      <div class="boot-percent" id="bootPercent">000%</div>
+    </div>
+  </div>
+
+  <div id="fatal" role="alert">
+    <h2>O motor 3D não conseguiu iniciar</h2>
+    <p>
+      Abra esta página com o lançador PowerShell incluído ou com um servidor local.
+      Verifique também se a aceleração por hardware está ativada no navegador.
+    </p>
+    <code id="fatalMessage">Erro desconhecido</code>
+  </div>
+
+  <script>
+    window.__BELENTANI_STARTED__ = false;
+    window.__BELENTANI_BOOT_ERROR__ = "";
+    window.addEventListener("error", function (event) {
+      window.__BELENTANI_BOOT_ERROR__ = event.message || "Error de carga";
+    });
+    setTimeout(function () {
+      if (!window.__BELENTANI_STARTED__) {
+        var fatal = document.getElementById("fatal");
+        var message = document.getElementById("fatalMessage");
+        if (fatal && message) {
+          message.textContent = window.__BELENTANI_BOOT_ERROR__ ||
+            "Não foram carregados os módulos remotos do Three.js. Usa INICIAR_BELENTANI.ps1 e verifica a conexão.";
+          fatal.classList.add("show");
+          document.getElementById("boot")?.classList.add("done");
+        }
+      }
+    }, 12000);
+  </script>
+
+  <script type="module" src="core/hub-scene.js"></script>
+  <script>
+  (function () {
+    var codex = document.getElementById("codex");
+    if (!codex) return;
+    function openCodex() { codex.classList.add("open"); }
+    function closeCodex() { codex.classList.remove("open"); }
+    ["loreBtn", "loreNav"].forEach(function (id) {
+      var b = document.getElementById(id);
+      if (b) b.addEventListener("click", openCodex);
+    });
+    var close = document.getElementById("codexClose");
+    if (close) close.addEventListener("click", closeCodex);
+    var backdrop = codex.querySelector(".codex-backdrop");
+    if (backdrop) backdrop.addEventListener("click", closeCodex);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeCodex(); });
+    if (location.hash === "#lore") openCodex();
+    addEventListener("hashchange", function () { if (location.hash === "#lore") openCodex(); });
+
+    var codexPanel = codex.querySelector(".codex-panel");
+    if (codexPanel) {
+      var scrollObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      }, { root: codexPanel, threshold: 0.15 });
+      codex.querySelectorAll("h2").forEach(function (h) { scrollObserver.observe(h); });
+    }
+  })();
+  </script>
+
+  <!-- =========================================================================
+       PORTFÓLIO / OBRAS — módulo acrescentado NO MESMO ARQUIVO
+       (motor próprio em Canvas2D + WebAudio; nada de recursos externos)
+       ========================================================================= -->
+  <style>
+    /* Portfólio integrado DENTRO do códex existente — a interface NÃO muda */
+    #portfolio{display:block;margin-top:30px;border-top:1px solid var(--glass-line);padding-top:10px}
+    #portfolio .pf-backdrop,#portfolio .pf-close,#pf-launch{display:none!important}
+    #portfolio .pf-panel{position:static;inset:auto;border:0;background:transparent;padding:0;box-shadow:none}
+    #portfolio .pf-kicker{font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.36em;text-transform:uppercase;color:var(--red-hot);margin:0 0 10px}
+    #portfolio h1{margin:0 0 6px;font-size:clamp(30px,5.6vw,68px);letter-spacing:-.03em}
+    #portfolio h1 .o{color:transparent;-webkit-text-stroke:1px var(--red-hot)}
+    #portfolio h2{margin:34px 0 12px;font-size:clamp(20px,2.6vw,32px)}
+    #portfolio p{color:var(--muted);max-width:74ch}
+    .pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:16px}
+    .pf-card{border:1px solid var(--glass-line);border-radius:16px;overflow:hidden;background:#060109;cursor:crosshair;position:relative;transition:transform .5s var(--ease-out),border-color .4s}
+    .pf-card:hover{transform:translateY(-4px);border-color:var(--red)}
+    .pf-card canvas{width:100%;aspect-ratio:16/10;display:block}
+    .pf-card .pf-cap{padding:10px 12px;font:500 12px/1.4 ui-monospace,monospace;letter-spacing:.06em;color:var(--muted);border-top:1px solid var(--glass-line)}
+    .pf-card .pf-idx{position:absolute;top:10px;left:12px;font:600 10px ui-monospace,monospace;letter-spacing:.24em;color:var(--red-hot);text-shadow:0 0 10px rgba(255,0,60,.6)}
+    .pf-eras{display:grid;gap:12px;margin-top:14px}
+    .pf-era{border-left:2px solid var(--red);padding:4px 0 4px 16px;background:linear-gradient(90deg,rgba(255,0,60,.07),transparent)}
+    .pf-era b{display:block;font:600 12px ui-monospace,monospace;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+    .pf-gems{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px}
+    .pf-gem{border:1px solid var(--glass-line);border-radius:16px;padding:18px;background:var(--glass)}
+    .pf-gem b{display:block;font:600 11px ui-monospace,monospace;letter-spacing:.26em;color:var(--red-hot);margin-bottom:8px}
+    .pf-gem h3{margin:0 0 6px;font-size:18px}
+    .pf-gem p{margin:0;font-size:14px}
+    .pf-viz{margin-top:14px;border:1px solid var(--glass-line);border-radius:16px;overflow:hidden;background:#05000a}
+    .pf-viz canvas{width:100%;height:140px;display:block}
+    .pf-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    .pf-btn{padding:11px 20px;border-radius:999px;border:1px solid var(--glass-line);background:var(--glass);color:var(--white);font:500 13px inherit;letter-spacing:.06em;cursor:pointer}
+    .pf-btn[aria-pressed="true"]{border-color:var(--red);background:rgba(255,0,60,.16)}
+    .pf-btn:hover{transform:translateY(-1px)}
+    .pf-note{font:400 12px ui-monospace,monospace;color:var(--dim,#6f6a7c);letter-spacing:.04em}
+    #pf-launch{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-bottom,18px) + 62px);z-index:55;
+      padding:11px 22px;border-radius:999px;border:1px solid var(--red);background:rgba(255,0,60,.14);color:#fff;
+      font:600 11px/1 ui-monospace,monospace;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(10px)}
+    #pf-launch:hover{background:rgba(255,0,60,.3)}
+    @media(max-width:720px){#portfolio .pf-panel{inset:0;border-radius:0}}
+  </style>
+
+  <section id="portfolio" role="dialog" aria-modal="true" aria-label="Portfólio e obras">
+    <div class="pf-backdrop"></div>
+    <div class="pf-panel">
+      <button class="pf-close" id="pfClose" type="button" aria-label="Fechar portfólio">×</button>
+      <p class="pf-kicker">Códice Belentani // Portfólio // Obras · 432 Hz</p>
+      <h1>Belentani <span class="o">Portfólio</span></h1>
+      <p>A minha essência compilada: cada painel abaixo é <strong>gerado em código</strong>, em tempo real, por este mesmo arquivo. Nada é imagem estática e nada vem de fora — só matemática, Canvas2D e o motor WebGL desta página.</p>
+
+      <h2>Obras</h2>
+      <p class="pf-note">Clique num painel para recompor a cena.</p>
+      <div class="pf-grid" id="pfWorks"></div>
+
+      <h2>Crônica do lore — as seis eras</h2>
+      <div class="pf-eras">
+        <div class="pf-era"><b>Era 0 — O caos</b>Dezenas de repos dispersos, versões que se traem. O universo começa como ruído.</div>
+        <div class="pf-era"><b>Era I — Belentani (Nó 01)</b>O núcleo absorve o caos: monorepo, bíblia e fechamento de dívida técnica.</div>
+        <div class="pf-era"><b>Era II — O Artista (Nó 02)</b>A mão humana: o código converte-se em obra — retratos, labirintos e o workflow criativo.</div>
+        <div class="pf-era"><b>Era III — Neon Glassmorphism (Nó 03)</b>Vidro, néon e vazio como idioma comum.</div>
+        <div class="pf-era"><b>Era IV — The Judas Experience (Nó 04)</b>O sistema comete um erro com nome: Judas. Traição, frequência, hackeo e redenção.</div>
+        <div class="pf-era"><b>Era V — Omega (Nó 05)</b>O último nó olha o lore nos olhos e decide continuar. Nenhuma página é terminal.</div>
+      </div>
+
+      <h2>As quatro gemas</h2>
+      <div class="pf-gems">
+        <div class="pf-gem"><b>GEMA I</b><h3>Traição</h3><p>O algoritmo da dor. O boot corta-se; a chuva de código tinge-se de vermelho.</p></div>
+        <div class="pf-gem"><b>GEMA II</b><h3>Frequência</h3><p>432 Hz como tribunal. A onda mede o que resta de verdade.</p></div>
+        <div class="pf-gem"><b>GEMA III</b><h3>Revelação</h3><p>O diamante refrata o que estava escondido. IOR 2.417.</p></div>
+        <div class="pf-gem"><b>GEMA IV</b><h3>Redenção</h3><p>A chave dourada abre o último nó. Nenhuma página é terminal.</p></div>
+      </div>
+
+      <h2>432 Hz — frequência-raiz</h2>
+      <div class="pf-viz"><canvas id="pfViz" aria-label="Visualizador 432 Hz"></canvas></div>
+      <div class="pf-row">
+        <button class="pf-btn" id="pfAudio" type="button" aria-pressed="false">Ativar drone 432 Hz</button>
+        <span class="pf-note">Onda gerada por WebAudio (sem ficheiros de áudio).</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function () {
+    "use strict";
+    var dlg = document.getElementById("portfolio");
+    if (!dlg) return;
+
+    /* ---------- integração no códice existente (interface intacta) ---------- */
+    var codexPanel = document.querySelector("#codex .codex-panel");
+    if (codexPanel) codexPanel.appendChild(dlg);
+    var bdEl = dlg.querySelector(".pf-backdrop");
+    if (bdEl && bdEl.parentNode) bdEl.parentNode.removeChild(bdEl);
+    var clEl = document.getElementById("pfClose");
+    if (clEl && clEl.parentNode) clEl.parentNode.removeChild(clEl);
+
+    /* ---------- obras: gerador procedural (Canvas2D) ---------- */
+    var works = [
+      ["Núcleo 04", "orbit"], ["Eclipse Vermelho", "nebula"], ["Máquina Orgânica", "rings"],
+      ["Chave de Ouro", "bars"], ["Diamante 2.417", "shard"], ["Vazio Neon", "grid"],
+      ["432 Hz", "wave"], ["Códice", "glyph"], ["Lore Unificado", "nebula"],
+      ["Omega", "orbit"], ["Traição", "shard"], ["Redenção", "wave"],
+      ["Planeta Vivo", "orbit"], ["Agulha Ancestral", "bars"], ["Espelho de Omega", "rings"],
+      ["Hélice de Judas", "spiral"], ["Cidade Subterrânea", "city"], ["Túnel Estelar", "tunnel"],
+      ["Cristal Primordial", "crystal"], ["Frequência Dupla", "lissa"], ["Olho do Sistema", "orbit"],
+      ["Coroa", "rings"], ["Coração", "wave"], ["Máscara", "shard"], ["Pendrive", "bars"],
+      ["Amapola", "nebula"], ["Sangue", "wave"], ["Tomada de Consciência", "tunnel"],
+      ["Eco de Outra Era", "spiral"], ["Nó 05 · Omega", "city"],
+      ["Mandala", "mandala"], ["Circuito", "circuit"], ["Relógio de Areia", "bars"],
+      ["Biblioteca", "grid"], ["Serpente", "spiral"], ["Estrela Morta", "shard"],
+      ["Aurora", "nebula"], ["Bússola", "rings"], ["Ampulheta", "tunnel"],
+      ["Fóssil", "crystal"], ["Espelho Negro", "lissa"], ["Voz de Judas", "wave"],
+      ["Porta Final", "city"], ["Gênesis", "orbit"]
+    ];
+    var pal = ["#ff003c", "#ff285f", "#65f7ff", "#8b5cff", "#ffd45c"];
+
+    function hexA(h, a) { var n = parseInt(h.slice(1), 16); return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; }
+
+    function drawArt(cv, mode, seed) {
+      var dpr = Math.min(devicePixelRatio || 1, 2);
+      var w = cv.width = Math.round(320 * dpr), h = cv.height = Math.round(200 * dpr);
+      var x = cv.getContext("2d"); if (!x) return;
+      var r = seed * 9301 + 49297; var R = function () { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+      var bg = x.createLinearGradient(0, 0, w, h); bg.addColorStop(0, "#08000e"); bg.addColorStop(1, "#150017");
+      x.fillStyle = bg; x.fillRect(0, 0, w, h);
+
+      if (mode === "orbit") {
+        for (var k = 0; k < 6; k++) { x.beginPath(); x.arc(w / 2, h / 2, (14 + k * 16) * dpr, R() * 6.28, R() * 6.28 + 1.3); x.strokeStyle = hexA(pal[k % 5], .85); x.lineWidth = 2 * dpr; x.stroke(); }
+        x.beginPath(); x.arc(w / 2, h / 2, 13 * dpr, 0, 7); x.fillStyle = "#ff285f"; x.fill();
+      } else if (mode === "grid") {
+        x.strokeStyle = hexA("#65f7ff", .45); x.lineWidth = 1 * dpr;
+        for (var gx = 0; gx < w; gx += 20 * dpr) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, h); x.stroke(); }
+        for (var gy = 0; gy < h; gy += 20 * dpr) { x.beginPath(); x.moveTo(0, gy); x.lineTo(w, gy); x.stroke(); }
+        for (var d = 0; d < 46; d++) { x.fillStyle = hexA(pal[Math.floor(R() * 5)], .9); x.fillRect(R() * w, R() * h, 2 * dpr, 2 * dpr); }
+      } else if (mode === "wave") {
+        x.lineWidth = 1.6 * dpr;
+        for (var wv = 0; wv < 40; wv++) { x.beginPath(); x.strokeStyle = hexA(pal[wv % 5], .7);
+          for (var px = 0; px <= w; px += 7 * dpr) { var yy = h / 2 + Math.sin((px / w) * 6.283 * 2 + wv * .3) * (wv * 2.2 + 6) * dpr; px ? x.lineTo(px, yy) : x.moveTo(px, yy); } x.stroke(); }
+      } else if (mode === "rings") {
+        for (var rr = 0; rr < 48; rr++) { x.beginPath(); x.ellipse(w / 2, h / 2, (8 + rr * 4) * dpr, (8 + rr * 4) * dpr * .48, rr * .02, 0, 7); x.strokeStyle = hexA(pal[rr % 5], .5); x.lineWidth = 1 * dpr; x.stroke(); }
+      } else if (mode === "bars") {
+        var bx = 6 * dpr;
+        while (bx < w) { var bw = (3 + R() * 22) * dpr, bh = R() * h; x.fillStyle = hexA(pal[Math.floor(R() * 5)], .8); x.fillRect(bx, h - bh, bw, bh); bx += bw + 3 * dpr; }
+      } else if (mode === "shard") {
+        var cx = w * (.3 + R() * .4), cy = h * .5;
+        for (var s = 0; s < 14; s++) {
+          var a = R() * 6.28, L = (30 + R() * 90) * dpr;
+          x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * L, cy + Math.sin(a) * L);
+          x.lineTo(cx + Math.cos(a + .5) * L * .6, cy + Math.sin(a + .5) * L * .6);
+          x.closePath(); x.fillStyle = hexA(pal[s % 5], .28); x.fill(); x.strokeStyle = hexA("#ffffff", .5); x.stroke();
+        }
+      } else if (mode === "glyph") {
+        x.strokeStyle = hexA("#ffd45c", .8); x.lineWidth = 2 * dpr;
+        for (var gl = 0; gl < 7; gl++) { var gyy = (12 + gl * 26) * dpr; x.beginPath();
+          for (var q = 0; q < 7; q++) { var qx = (12 + q * 42) * dpr; var on = R() > .5; if (on) { x.moveTo(qx, gyy); x.lineTo(qx + 26 * dpr, gyy); } } x.stroke(); }
+      } else if (mode === "spiral") {
+        x.lineWidth = 1.4 * dpr;
+        for (var sp = 0; sp < 5; sp++) { x.beginPath(); x.strokeStyle = hexA(pal[sp % 5], .8);
+          for (var aa = 0; aa < 64; aa++) { var rs = (aa / 64) * w * .44, th = aa * .32 + sp * 1.25 + R() * .08;
+            var sx2 = w / 2 + Math.cos(th) * rs, sy2 = h / 2 + Math.sin(th) * rs * .62; aa ? x.lineTo(sx2, sy2) : x.moveTo(sx2, sy2); } x.stroke(); }
+      } else if (mode === "city") {
+        for (var cb = 0; cb < 42; cb++) { var bw2 = (6 + R() * 22) * dpr, bh2 = (10 + R() * 92) * dpr, bx2 = R() * w;
+          x.fillStyle = "#0f0018"; x.fillRect(bx2, h - bh2, bw2, bh2);
+          x.fillStyle = hexA(pal[Math.floor(R() * 5)], .9); for (var wn = 0; wn < 8; wn++) x.fillRect(bx2 + R() * bw2, h - bh2 + R() * bh2, 1.6 * dpr, 1.6 * dpr); }
+        x.strokeStyle = hexA("#65f7ff", .5); for (var gl2 = 0; gl2 < 6; gl2++) { var gy2 = h - (gl2 * gl2 * 6) * dpr; x.beginPath(); x.moveTo(0, gy2); x.lineTo(w, gy2); x.stroke(); }
+      } else if (mode === "tunnel") {
+        for (var tn = 0; tn < 26; tn++) { var fq = (tn / 26) * (tn / 26); x.strokeStyle = hexA(pal[tn % 5], .8); x.lineWidth = (1 + fq * 4) * dpr;
+          x.beginPath(); x.arc(w / 2, h / 2, 6 + fq * w * .55, 0, 7); x.stroke(); }
+        for (var lk = 0; lk < 44; lk++) { var an = R() * 6.28, r1 = 10 + R() * w * .5; x.strokeStyle = hexA("#ffffff", .25);
+          x.beginPath(); x.moveTo(w / 2 + Math.cos(an) * r1, h / 2 + Math.sin(an) * r1); x.lineTo(w / 2 + Math.cos(an) * (r1 + 30 * dpr), h / 2 + Math.sin(an) * (r1 + 30 * dpr)); x.stroke(); }
+      } else if (mode === "crystal") {
+        for (var cr = 0; cr < 18; cr++) { var cxx = R() * w, cyy = R() * h, ss = (10 + R() * 40) * dpr;
+          x.beginPath(); x.moveTo(cxx, cyy - ss); x.lineTo(cxx + ss * .6, cyy); x.lineTo(cxx, cyy + ss); x.lineTo(cxx - ss * .6, cyy); x.closePath();
+          x.fillStyle = hexA(pal[Math.floor(R() * 5)], .3); x.fill(); x.strokeStyle = hexA("#ffffff", .55); x.lineWidth = dpr; x.stroke(); }
+      } else if (mode === "lissa") {
+        x.lineWidth = 1.6 * dpr;
+        for (var ls = 0; ls < 24; ls++) { x.beginPath(); x.strokeStyle = hexA(pal[ls % 5], .75);
+          for (var t2 = 0; t2 <= 6.283; t2 += .05) { var lx2 = w / 2 + Math.sin((3 + ls % 3) * t2 + ls) * w * .38, ly2 = h / 2 + Math.sin((4 + ls % 2) * t2) * h * .38; t2 ? x.lineTo(lx2, ly2) : x.moveTo(lx2, ly2); } x.stroke(); }
+      } else if (mode === "mandala") {
+        for (var md = 0; md < 9; md++) {
+          var petals = 6 + md * 2, rad = (16 + md * 14) * dpr;
+          for (var pt = 0; pt < petals; pt++) {
+            var th2 = (pt / petals) * 6.283 + md * .18;
+            x.beginPath();
+            x.ellipse(w / 2 + Math.cos(th2) * rad, h / 2 + Math.sin(th2) * rad * .62,
+              (5 + md * 2) * dpr, (14 + md * 3) * dpr, th2, 0, 7);
+            x.strokeStyle = hexA(pal[md % 5], .55); x.lineWidth = dpr; x.stroke();
+          }
+        }
+        x.beginPath(); x.arc(w / 2, h / 2, 8 * dpr, 0, 7); x.fillStyle = "#ffd45c"; x.fill();
+      } else if (mode === "circuit") {
+        for (var cq = 0; cq < 26; cq++) {
+          var x1 = Math.floor(R() * w), y1 = Math.floor(R() * h), horiz = R() > .5, len = (20 + R() * 90) * dpr;
+          x.strokeStyle = hexA(pal[Math.floor(R() * 5)], .6); x.lineWidth = 1.4 * dpr;
+          x.beginPath(); x.moveTo(x1, y1);
+          if (horiz) { x.lineTo(x1 + len, y1); x.lineTo(x1 + len, y1 + (R() > .5 ? len : -len)); }
+          else { x.lineTo(x1, y1 + len); x.lineTo(x1 + (R() > .5 ? len : -len), y1 + len); }
+          x.stroke();
+          x.beginPath(); x.arc(x1, y1, 2.2 * dpr, 0, 7); x.fillStyle = "#65f7ff"; x.fill();
+        }
+      } else {
+        var ng = x.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, w * .7);
+        ng.addColorStop(0, "rgba(255,40,95,.5)"); ng.addColorStop(.5, "rgba(139,92,255,.22)"); ng.addColorStop(1, "transparent");
+        x.fillStyle = ng; x.fillRect(0, 0, w, h);
+        for (var st = 0; st < 220; st++) { x.fillStyle = hexA(pal[Math.floor(R() * 5)], .8); x.fillRect(R() * w, R() * h, 1.3 * dpr, 1.3 * dpr); }
+      }
+    }
+
+    var grid = document.getElementById("pfWorks");
+    works.forEach(function (wk, i) {
+      var card = document.createElement("div"); card.className = "pf-card"; card.tabIndex = 0;
+      var cv = document.createElement("canvas"); var cap = document.createElement("div"); cap.className = "pf-cap"; cap.textContent = wk[0];
+      var idx = document.createElement("span"); idx.className = "pf-idx"; idx.textContent = String(i + 1).padStart(2, "0");
+      card.appendChild(cv); card.appendChild(cap); card.appendChild(idx); grid.appendChild(card);
+      drawArt(cv, wk[1], i * 7 + 3);
+      var redraw = function () { drawArt(cv, wk[1], Math.floor(Math.random() * 999)); };
+      card.addEventListener("click", redraw);
+      card.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); redraw(); } });
+    });
+
+    /* ---------- visualizador 432 Hz ---------- */
+    var viz = document.getElementById("pfViz");
+    var vctx = viz.getContext("2d");
+    var phase = 0;
+    function vizSize() { var dpr = Math.min(devicePixelRatio || 1, 2); viz.width = Math.round(viz.clientWidth * dpr); viz.height = Math.round(140 * dpr); }
+    vizSize(); addEventListener("resize", vizSize, { passive: true });
+    (function vizLoop() {
+      requestAnimationFrame(vizLoop);
+      if (!dlg.getClientRects().length) return;
+      var w = viz.width, h = viz.height, dpr = Math.min(devicePixelRatio || 1, 2);
+      if (viz.clientWidth * dpr !== w) vizSize();
+      phase += .02;
+      vctx.clearRect(0, 0, w, h);
+      for (var b = 0; b < 96; b++) {
+        var amp = (Math.sin(b * .35 + phase * 3) * .5 + .5) * (Math.sin(b * .07 + phase) * .5 + .5);
+        var bh = amp * h * .82 + 2;
+        var hue = 350 - (b / 96) * 60;
+        vctx.fillStyle = "hsla(" + hue + ",100%," + (52 + amp * 20) + "%,.9)";
+        vctx.fillRect(b * (w / 96), h - bh, (w / 96) * .62, bh);
+      }
+      vctx.strokeStyle = "rgba(255,212,92,.5)"; vctx.beginPath();
+      for (var px = 0; px <= w; px += 4) { var y = h / 2 + Math.sin(px / w * 6.283 * 3 + phase * 2) * h * .18; px ? vctx.lineTo(px, y) : vctx.moveTo(px, y); } vctx.stroke();
+    })();
+
+    /* ---------- drone 432 Hz (WebAudio, próprio) ---------- */
+    var actx = null, nodes = null, on = false;
+    var btn = document.getElementById("pfAudio");
+    btn.addEventListener("click", function () {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      if (!actx) {
+        actx = new AC();
+        var master = actx.createGain(); master.gain.value = 0; master.connect(actx.destination);
+        var base = 216;
+        [1, 1.5, 2, 2.5, 3, 4].forEach(function (m, i) {
+          var o = actx.createOscillator(); o.type = i % 2 ? "sine" : "triangle"; o.frequency.value = base * m;
+          var g = actx.createGain(); g.gain.value = .22 / (i + 1); o.connect(g); g.connect(master); o.start();
+        });
+        var lfo = actx.createOscillator(); lfo.frequency.value = .06; var lg = actx.createGain(); lg.gain.value = .1; lfo.connect(lg); lg.connect(master.gain); lfo.start();
+        nodes = master;
+      }
+      if (actx.state === "suspended") actx.resume();
+      on = !on; var t = actx.currentTime;
+      nodes.gain.cancelScheduledValues(t); nodes.gain.linearRampToValueAtTime(on ? .2 : 0, t + 1.1);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.textContent = on ? "Silenciar drone" : "Ativar drone 432 Hz";
+    });
+
+    /* ---------- secção: vídeo procedural ---------- */
+    var panel = dlg.querySelector(".pf-panel");
+    var h2v = document.createElement("h2"); h2v.textContent = "Vídeo procedural";
+    var pvWrap = document.createElement("div"); pvWrap.className = "pf-viz";
+    pvWrap.innerHTML = '<canvas id="pfVideo" aria-label="Vídeo procedural"></canvas>';
+    var rowv = document.createElement("div"); rowv.className = "pf-row";
+    var btnVid = document.createElement("button"); btnVid.className = "pf-btn"; btnVid.type = "button"; btnVid.textContent = "Pausar";
+    var noteVid = document.createElement("span"); noteVid.className = "pf-note"; noteVid.textContent = "Sequência gerada em código (sem ficheiros de vídeo).";
+    rowv.appendChild(btnVid); rowv.appendChild(noteVid);
+    panel.appendChild(h2v); panel.appendChild(pvWrap); panel.appendChild(rowv);
+
+    /* ligação discreta para o OS lírico-neón (nova página; a interface daqui NÃO muda) */
+    var osRow = document.createElement("div"); osRow.className = "pf-row";
+    var osLink = document.createElement("a"); osLink.className = "pf-btn"; osLink.href = "os.html";
+    osLink.textContent = "Abrir BELENTANI OS →";
+    var osNote = document.createElement("span"); osNote.className = "pf-note";
+    osNote.textContent = "Sistema operativo lírico-neón do caos (abre numa página nova).";
+    osRow.appendChild(osLink); osRow.appendChild(osNote);
+    panel.appendChild(osRow);
+
+    var vid = document.getElementById("pfVideo");
+    var vc = vid.getContext("2d");
+    var vplaying = true, vt = 0, vstars = [];
+    function vsize() {
+      var d = Math.min(devicePixelRatio || 1, 2);
+      vid.width = Math.round(vid.clientWidth * d); vid.height = Math.round(150 * d);
+      vstars = []; for (var i = 0; i < 110; i++) vstars.push({ x: Math.random(), y: Math.random(), z: Math.random(), s: Math.random() * 1.6 + .3 });
+    }
+    vsize(); addEventListener("resize", vsize, { passive: true });
+    btnVid.addEventListener("click", function () { vplaying = !vplaying; btnVid.textContent = vplaying ? "Pausar" : "Reproduzir"; btnVid.setAttribute("aria-pressed", vplaying ? "false" : "true"); });
+    (function vloop() {
+      requestAnimationFrame(vloop);
+      if (!dlg.getClientRects().length) return;
+      var d = Math.min(devicePixelRatio || 1, 2);
+      if (vid.clientWidth * d !== vid.width) vsize();
+      var w = vid.width, h = vid.height;
+      if (vplaying) vt += .016;
+      vc.fillStyle = "rgba(3,0,7,.45)"; vc.fillRect(0, 0, w, h);
+      for (var i = 0; i < vstars.length; i++) { var st = vstars[i];
+        var warp = 1 + Math.max(0, Math.sin(vt * .5)) * 1.6;
+        st.y += (0.0006 + st.z * 0.0022) * warp;
+        if (st.y > 1) st.y = 0;
+        vc.globalAlpha = .25 + st.z * .75; vc.fillStyle = st.z > .8 ? "#65f7ff" : (st.z > .5 ? "#ff285f" : "#ffffff");
+        var sx = st.x * w, sy = st.y * h; vc.fillRect(sx, sy, st.s * d, st.s * d * (1 + st.z * 2));
+      }
+      vc.globalAlpha = 1;
+      var phase = Math.max(0, Math.sin(vt * .35));
+      if (phase < .55) {
+        var rp = Math.min(w, h) * (.07 + phase * .5);
+        var pgrad = vc.createRadialGradient(w / 2 - rp * .3, h / 2 - rp * .3, rp * .1, w / 2, h / 2, rp);
+        pgrad.addColorStop(0, "#ff5470"); pgrad.addColorStop(.55, "#8a0022"); pgrad.addColorStop(1, "#170009");
+        vc.beginPath(); vc.arc(w / 2, h / 2, rp, 0, 7); vc.fillStyle = pgrad; vc.fill();
+        vc.strokeStyle = "rgba(101,247,255,.6)"; vc.lineWidth = 1.6 * d; vc.stroke();
+      }
+      vc.strokeStyle = "rgba(255,212,92,.5)"; vc.beginPath();
+      for (var px = 0; px <= w; px += 4) { var y2 = h / 2 + Math.sin(px / w * 6.283 * 3 + vt * 2) * h * .16; px ? vc.lineTo(px, y2) : vc.moveTo(px, y2); } vc.stroke();
+      vc.fillStyle = "rgba(255,255,255,.55)"; vc.font = (10 * d) + "px ui-monospace,monospace";
+      vc.fillText("432 HZ · " + String(Math.floor(vt * 24) % 1000).padStart(3, "0"), 10 * d, 16 * d);
+    })();
+
+    /* ---------- secção: áudio procedural (sequenciador generativo) ---------- */
+    var h2a = document.createElement("h2"); h2a.textContent = "Áudio procedural";
+    var aNote = document.createElement("p"); aNote.className = "pf-note";
+    aNote.textContent = "Melodia generativa afinada a 432 Hz, sintetizada em tempo real (sem ficheiros de áudio).";
+    var arow = document.createElement("div"); arow.className = "pf-row";
+    var btnSeq = document.createElement("button"); btnSeq.className = "pf-btn"; btnSeq.type = "button";
+    btnSeq.textContent = "Tocar sequência"; btnSeq.setAttribute("aria-pressed", "false");
+    var btnScale = document.createElement("button"); btnScale.className = "pf-btn"; btnScale.type = "button";
+    var aNote2 = document.createElement("span"); aNote2.className = "pf-note"; aNote2.textContent = "Escalas em temperamento de 432 Hz.";
+    arow.appendChild(btnSeq); arow.appendChild(btnScale); arow.appendChild(aNote2);
+    panel.appendChild(h2a); panel.appendChild(aNote); panel.appendChild(arow);
+
+    var SCALES_ES = { "Menor": "Menor", "Dórico": "Dórico", "Pent. menor": "Pent. menor", "Pent. maior": "Pent. mayor" };
+    var SEQ = {
+      on: false, timer: null, step: 0, actx: null, master: null, root: 216, idx: 0,
+      scales: [[0, 2, 3, 5, 7, 8, 10], [0, 2, 3, 5, 7, 9, 10], [0, 3, 5, 7, 10], [0, 2, 4, 7, 9]],
+      names: ["Menor", "Dórico", "Pent. menor", "Pent. maior"]
+    };
+    function seqNote(semi) {
+      var o = SEQ.actx.createOscillator(), g = SEQ.actx.createGain();
+      o.type = "triangle"; o.frequency.value = SEQ.root * Math.pow(2, semi / 12);
+      var t = SEQ.actx.currentTime;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.42, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.95);
+      o.connect(g); g.connect(SEQ.master); o.start(t); o.stop(t + 1.0);
+    }
+    function seqTick() {
+      var sc = SEQ.scales[SEQ.idx];
+      if (Math.random() < 0.82) seqNote(sc[Math.floor(Math.random() * sc.length)] + (Math.random() < 0.18 ? 12 : 0));
+      if (SEQ.step % 4 === 0 && Math.random() < 0.7) seqNote(sc[0] - 12);
+      if (SEQ.step % 8 === 0 && Math.random() < 0.5) seqNote(sc[sc.length - 1] + 12);
+      SEQ.step++;
+    }
+    function seqLabel() {
+      var es = pfLang === "es";
+      btnScale.textContent = "Escala: " + (es ? (SCALES_ES[SEQ.names[SEQ.idx]] || SEQ.names[SEQ.idx]) : SEQ.names[SEQ.idx]);
+      btnSeq.textContent = SEQ.on ? (es ? "Detener secuencia" : "Parar sequência") : (es ? "Reproducir secuencia" : "Tocar sequência");
+      btnSeq.setAttribute("aria-pressed", SEQ.on ? "true" : "false");
+    }
+    btnSeq.addEventListener("click", function () {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      if (!SEQ.actx) {
+        SEQ.actx = new AC();
+        SEQ.master = SEQ.actx.createGain(); SEQ.master.gain.value = 0.16;
+        SEQ.master.connect(SEQ.actx.destination);
+      }
+      if (SEQ.actx.state === "suspended") SEQ.actx.resume();
+      SEQ.on = !SEQ.on;
+      if (SEQ.on) { seqTick(); SEQ.timer = setInterval(seqTick, 320); }
+      else if (SEQ.timer) { clearInterval(SEQ.timer); SEQ.timer = null; }
+      seqLabel();
+    });
+    btnScale.addEventListener("click", function () { SEQ.idx = (SEQ.idx + 1) % SEQ.scales.length; seqLabel(); });
+    if (typeof pfLang === "undefined") var pfLang = "pt";
+    seqLabel();
+
+    /* ---------- alternador PT/ES do painel ---------- */
+    var PFDICT = [
+      ["Obras", "Obras"],
+      ["Clique num painel para recompor a cena.", "Toca un panel para recomponer la escena."],
+      ["Crônica do lore — as seis eras", "Crónica del lore — las seis eras"],
+      ["As quatro gemas", "Las cuatro gemas"],
+      ["432 Hz — frequência-raiz", "432 Hz — frecuencia raíz"],
+      ["Ativar drone 432 Hz", "Activar drone 432 Hz"],
+      ["Silenciar drone", "Silenciar drone"],
+      ["Onda gerada por WebAudio (sem ficheiros de áudio).", "Onda generada por WebAudio (sin ficheros de audio)."],
+      ["Vídeo procedural", "Vídeo procedural"],
+      ["Pausar", "Pausar"],
+      ["Reproduzir", "Reproducir"],
+      ["Sequência gerada em código (sem ficheiros de vídeo).", "Secuencia generada en código (sin ficheros de vídeo)."],
+      ["Áudio procedural", "Audio procedural"],
+      ["Melodia generativa afinada a 432 Hz, sintetizada em tempo real (sem ficheiros de áudio).", "Melodía generativa afinada a 432 Hz, sintetizada en tiempo real (sin ficheros de audio)."],
+      ["Escalas em temperamento de 432 Hz.", "Escalas en temperamento de 432 Hz."],
+      ["Tocar sequência", "Reproducir secuencia"],
+      ["Parar sequência", "Detener secuencia"],
+      ["Códice Belentani // Portfólio // Obras · 432 Hz", "Códice Belentani // Portafolio // Obras · 432 Hz"],
+      ["Portfólio", "Portafolio"],
+      ["A minha essência compilada: cada painel abaixo é", "Mi esencia compilada: cada panel de abajo está"],
+      ["gerado em código", "generado en código"],
+      [", em tempo real, por este mesmo arquivo. Nada é imagem estática e nada vem de fora — só matemática, Canvas2D e o motor WebGL desta página.", ", en tiempo real, por este mismo archivo. Nada es imagen estática y nada viene de fuera — solo matemática, Canvas2D y el motor WebGL de esta página."],
+      ["Era 0 — O caos", "Era 0 — El caos"],
+      ["Dezenas de repos dispersos, versões que se traem. O universo começa como ruído.", "Decenas de repos dispersos, versiones que se traicionan. El universo empieza como ruido."],
+      ["Era I — Belentani (Nó 01)", "Era I — Belentani (Nodo 01)"],
+      ["O núcleo absorve o caos: monorepo, bíblia e fechamento de dívida técnica.", "El núcleo absorbe el caos: monorepo, biblia y cierre de deuda técnica."],
+      ["Era II — O Artista (Nó 02)", "Era II — El Artista (Nodo 02)"],
+      ["A mão humana: o código converte-se em obra — retratos, labirintos e o workflow criativo.", "La mano humana: el código se convierte en obra — retratos, laberintos y el workflow creativo."],
+      ["Era III — Neon Glassmorphism (Nó 03)", "Era III — Neon Glassmorphism (Nodo 03)"],
+      ["Vidro, néon e vazio como idioma comum.", "Vidrio, neón y vacío como idioma común."],
+      ["Era IV — The Judas Experience (Nó 04)", "Era IV — The Judas Experience (Nodo 04)"],
+      ["O sistema comete um erro com nome: Judas. Traição, frequência, hackeo e redenção.", "El sistema comete un error con nombre: Judas. Traición, frecuencia, hackeo y redención."],
+      ["Era V — Omega (Nó 05)", "Era V — Omega (Nodo 05)"],
+      ["O último nó olha o lore nos olhos e decide continuar. Nenhuma página é terminal.", "El último nodo mira el lore a los ojos y decide continuar. Ninguna página es terminal."],
+      ["GEMA I", "GEMA I"], ["GEMA II", "GEMA II"], ["GEMA III", "GEMA III"], ["GEMA IV", "GEMA IV"],
+      ["Traição", "Traición"], ["Frequência", "Frecuencia"], ["Revelação", "Revelación"], ["Redenção", "Redención"],
+      ["O algoritmo da dor. O boot corta-se; a chuva de código tinge-se de vermelho.", "El algoritmo del dolor. El boot se corta; la lluvia de código se tiñe de rojo."],
+      ["432 Hz como tribunal. A onda mede o que resta de verdade.", "432 Hz como tribunal. La onda mide lo que queda de verdad."],
+      ["O diamante refrata o que estava escondido. IOR 2.417.", "El diamante refracta lo que estaba escondido. IOR 2.417."],
+      ["A chave dourada abre o último nó. Nenhuma página é terminal.", "La llave dorada abre el último nodo. Ninguna página es terminal."]
+    ];
+    var btnLang = document.createElement("button");
+    btnLang.className = "pf-btn"; btnLang.type = "button"; btnLang.textContent = "PT / ES";
+    btnLang.style.position = "absolute"; btnLang.style.top = "18px"; btnLang.style.right = "72px";
+    panel.appendChild(btnLang);
+    function refreshDynamic() {
+      if (typeof launch !== "undefined" && launch) launch.textContent = pfLang === "pt" ? "Portfólio" : "Portafolio";
+      if (typeof btnVid !== "undefined" && btnVid) btnVid.textContent = vplaying ? "Pausar" : (pfLang === "pt" ? "Reproduzir" : "Reproducir");
+      seqLabel();
+      btnLang.textContent = pfLang === "pt" ? "PT / ES" : "ES / PT";
+    }
+    function pfTranslate() {
+      var from = pfLang === "pt" ? 1 : 0, to = pfLang === "pt" ? 0 : 1;
+      var walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT, null);
+      var node;
+      while ((node = walker.nextNode())) {
+        var txt = node.nodeValue.trim();
+        for (var i = 0; i < PFDICT.length; i++) {
+          if (txt === PFDICT[i][from]) { node.nodeValue = node.nodeValue.replace(PFDICT[i][from], PFDICT[i][to]); break; }
+        }
+      }
+      refreshDynamic();
+    }
+    btnLang.addEventListener("click", function () { pfLang = pfLang === "pt" ? "es" : "pt"; pfTranslate(); });
+
+    // O portfólio já está dentro do códice: nada de abrir/fechar.
+  })();
+  </script>
+  <script type="module" src="core/session-hub.js"></script>`r`n</body>
+</html>

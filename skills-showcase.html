@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#030104" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="BELENTANI Skills Showcase — Superpowers, Image2CSS e o toolkit criativo do ecossistema Belentani." />
+  <meta name="author" content="Pedro Marcos Santos Belentani" />
+  <title>BELENTANI — Skills Showcase</title>
+  <style>
+    @property --glow-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+    :root {
+      color-scheme: dark;
+      --void: #010103;
+      --void-2: #09030a;
+      --white: #f7fbff;
+      --muted: #a6a3ad;
+      --red: #ff003c;
+      --red-hot: #ff285f;
+      --gold: #ffd45c;
+      --cyan: #65f7ff;
+      --green: #3dff8a;
+      --purple: #b44dff;
+      --glass: rgba(255,255,255,.048);
+      --glass-line: rgba(255,255,255,.16);
+      --radius: 20px;
+      --blur: 24px;
+      --ease: cubic-bezier(.16,1,.3,1);
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+    html { background: var(--void); }
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,0,60,.06), transparent 40%),
+        radial-gradient(circle at 80% 90%, rgba(101,247,255,.04), transparent 35%),
+        linear-gradient(180deg, var(--void-2), var(--void) 60%);
+      -webkit-font-smoothing: antialiased;
+      padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 0 40px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #fff 0 3%, var(--red-hot) 8%, var(--red) 19%, transparent 40%),
+        conic-gradient(from 0deg, transparent, var(--red), transparent, var(--gold), transparent);
+      box-shadow: 0 0 24px rgba(255,0,60,.6);
+      animation: spin 8s linear infinite;
+    }
+
+    .kicker {
+      color: var(--red-hot);
+      font: 700 10px/1 ui-monospace, monospace;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: .85;
+      letter-spacing: -.05em;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    h1 .solid { color: #fff; }
+    h1 .outline {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,.4);
+      background: linear-gradient(100deg, rgba(255,255,255,.8), var(--red-hot) 60%, rgba(255,255,255,.4));
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .subtitle {
+      max-width: 600px;
+      margin: 20px auto 0;
+      color: rgba(240,237,244,.6);
+      font-size: clamp(13px, 1.2vw, 16px);
+      line-height: 1.65;
+    }
+
+    h2 {
+      font-size: clamp(22px, 3vw, 32px);
+      letter-spacing: -.02em;
+      margin: 50px 0 20px;
+    }
+
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 28px;
+      height: 2px;
+      margin-right: 14px;
+      vertical-align: middle;
+      background: linear-gradient(90deg, transparent, var(--red));
+      box-shadow: 0 0 12px var(--red);
+    }
+
+    .grid { display: grid; gap: 16px; }
+    .g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .g3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,0,60,.03));
+      backdrop-filter: blur(var(--blur));
+      transition: transform .35s var(--ease), border-color .35s, box-shadow .35s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,0,60,.4);
+      box-shadow: 0 12px 40px rgba(255,0,60,.1), inset 0 0 30px rgba(255,0,60,.04);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      padding: 1px;
+      border-radius: inherit;
+      background: conic-gradient(from var(--glow-angle), transparent 0 20%, rgba(255,255,255,.3) 25%, rgba(255,0,60,.5) 30%, transparent 38% 100%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      animation: glow-border 8s linear infinite;
+      transition: opacity .4s;
+    }
+
+    .card:hover::before { opacity: .6; }
+
+    .card h3 {
+      font-size: 17px;
+      margin-bottom: 6px;
+      letter-spacing: .01em;
+    }
+
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      font: 700 9px/1 ui-monospace, monospace;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .tag-red { color: var(--red-hot); }
+    .tag-gold { color: var(--gold); }
+    .tag-cyan { color: var(--cyan); }
+    .tag-green { color: var(--green); }
+    .tag-purple { color: var(--purple); }
+
+    .card p {
+      color: rgba(240,237,244,.6);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .card .icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 5px 12px;
+      margin: 3px 6px 3px 0;
+      border: 1px solid rgba(255,0,60,.35);
+      border-radius: 999px;
+      font: 700 10px/1 ui-monospace, monospace;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.85);
+    }
+
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      margin: 40px 0;
+      background: linear-gradient(90deg, transparent, rgba(255,0,60,.3), transparent);
+    }
+
+    .hero-skill {
+      border: 1px solid rgba(255,0,60,.35);
+      border-radius: 24px;
+      padding: 32px;
+      background: linear-gradient(145deg, rgba(255,0,60,.06), rgba(255,255,255,.02));
+      margin-bottom: 20px;
+    }
+
+    .hero-skill h3 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .hero-skill p {
+      color: rgba(240,237,244,.7);
+      font-size: 14px;
+      line-height: 1.65;
+      max-width: 700px;
+    }
+
+    .demo-box {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      background: rgba(0,0,0,.3);
+      font: 11px/1.6 ui-monospace, monospace;
+      color: rgba(255,255,255,.6);
+      overflow-x: auto;
+    }
+
+    .demo-box code { color: var(--cyan); }
+    .demo-box .comment { color: rgba(255,255,255,.3); }
+
+    footer {
+      text-align: center;
+      padding: 50px 0 30px;
+      color: rgba(255,255,255,.3);
+      font: 600 10px/1.4 ui-monospace, monospace;
+      letter-spacing: .1em;
+    }
+
+    footer a { color: var(--red-hot); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes glow-border { to { --glow-angle: 360deg; } }
+
+    @media (max-width: 600px) {
+      body { padding: 16px; }
+      header { padding: 40px 0 30px; }
+      .hero-skill { padding: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-mark"></div>
+      <p class="kicker">Belentani Ecosystem · Skills & Tools</p>
+      <h1>
+        <span class="solid">Skills</span>
+        <span class="outline">Showcase</span>
+      </h1>
+      <p class="subtitle">
+        O toolkit criativo do ecossistema <strong>Belentani</strong>. Skills de processo, design, código e ferramentas frontend — tudo o que alimenta o universo visual.
+      </p>
+    </header>
+
+    <h2>Skills de Processo</h2>
+    <div class="grid g2">
+      <div class="hero-skill">
+        <span class="tag tag-red">CORE SKILL</span>
+        <h3>Superpowers</h3>
+        <p>
+          Meta-skill que orquestra todas as outras. Antes de qualquer ação — até de perguntar — verifica se existe uma skill aplicável e invoca-a. Estabelece a prioridade: skills de processo primeiro (brainstorming, debugging), depois skills de implementação (frontend, backend).
+        </p>
+        <div class="demo-box">
+          <span class="comment">// Regra principal:</span><br>
+          <code>if (skillExists(task)) invoke(skill)</code><br>
+          <span class="comment">// Ordem: brainstorming → debugging → domain skills</span><br>
+          <code>process_skills.before(implementation_skills)</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="icon">🧠</div>
+        <span class="tag tag-gold">PROCESSO</span>
+        <h3>Brainstorming</h3>
+        <p>Skill de ideação estruturada. Ativada antes de qualquer plano de implementação para explorar opções e antecipar problemas.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🔍</div>
+        <span class="tag tag-gold">PROCESSO</span>
+        <h3>Systematic Debugging</h3>
+        <p>Metodologia passo-a-passo para diagnóstico. Ativada antes de qualquer correção de bug para identificar a causa raiz.</p>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Ferramentas Frontend</h2>
+    <div class="grid g2">
+      <div class="hero-skill">
+        <span class="tag tag-cyan">FRONTEND TOOL</span>
+        <h3>Image2CSS</h3>
+        <p>
+          Ferramenta que converte qualquer imagem em CSS puro usando a técnica de <code>box-shadow</code>. Um único <code>&lt;div&gt;</code> reproduz a imagem pixel a pixel — sem ficheiro de imagem, sem <code>&lt;img&gt;</code>, sem <code>background-image</code>. Ideal para logos, ícones e pixel art leves.
+        </p>
+        <div class="demo-box">
+          <span class="comment">/* Um div, milhares de box-shadows */</span><br>
+          <code>.css-art {</code><br>
+          &nbsp;&nbsp;<code>width: 1px; height: 1px;</code><br>
+          &nbsp;&nbsp;<code>box-shadow:</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<code>0px 0px #ff003c,</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<code>1px 0px #ff285f,</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<code>2px 0px #ffd45c,</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<code>/* ... cada pixel = um shadow */</code><br>
+          <code>}</code>
+        </div>
+        <p style="margin-top:12px; font-size:12px; color: rgba(240,237,244,.5);">
+          Ferramentas: <span class="chip">image2css.com</span> <span class="chip">javier.xyz/img2css</span> <span class="chip">github.com/rivetin/Image2CSS</span>
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🎨</div>
+        <span class="tag tag-cyan">ESTÉTICA</span>
+        <h3>Neon Glassmorphism</h3>
+        <p>Linguagem visual do ecossistema: vidro, néon e vazio. CSS <code>backdrop-filter</code>, bordas cónicas animadas e gradientes radiais sobre fundo escuro.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">💎</div>
+        <span class="tag tag-cyan">3D</span>
+        <h3>Three.js PBR</h3>
+        <p>Motor visual: <code>MeshPhysicalMaterial</code> com transmissão, IOR real, iridescência e dispersão cromática. Shaders procedurais para planetas e nebulosas.</p>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Skills de Design & Implementação</h2>
+    <div class="grid g3">
+      <div class="card">
+        <div class="icon">🖥️</div>
+        <span class="tag tag-green">DESIGN</span>
+        <h3>Frontend Design</h3>
+        <p>Diretrizes de UI/UX para responsive, acessibilidade WCAG e performance.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🏗️</div>
+        <span class="tag tag-green">ARQUITECTURA</span>
+        <h3>System Design</h3>
+        <p>Padrões de arquitetura: monorepo, micro-frontends, CDN e caching.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🧪</div>
+        <span class="tag tag-green">QUALIDADE</span>
+        <h3>Test Strategy</h3>
+        <p>Pirâmide de testes: unit → integration → e2e. Cobertura mínima e CI/CD gates.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🔒</div>
+        <span class="tag tag-purple">SEGURANÇA</span>
+        <h3>Security Review</h3>
+        <p>Auditoria OWASP Top 10, headers de segurança, CSP e SRI para dependências CDN.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">📖</div>
+        <span class="tag tag-purple">DOCS</span>
+        <h3>Documentation</h3>
+        <p>Documentação viva: README, ADRs, changelogs automáticos e diagramas Mermaid.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">⚡</div>
+        <span class="tag tag-purple">PERFORMANCE</span>
+        <h3>Web Performance</h3>
+        <p>Core Web Vitals, lazy loading, code splitting e otimização de assets.</p>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Ecossistema Belentani · Stack</h2>
+    <p style="color: rgba(240,237,244,.5); margin-bottom: 16px; font-size: 13px;">Tecnologias e ferramentas que compõem o universo visual.</p>
+    <p>
+      <span class="chip">Three.js</span>
+      <span class="chip">GLSL Shaders</span>
+      <span class="chip">Image2CSS</span>
+      <span class="chip">Glassmorphism</span>
+      <span class="chip">CSS Custom Properties</span>
+      <span class="chip">Web Audio API</span>
+      <span class="chip">EffectComposer</span>
+      <span class="chip">PBR Materials</span>
+      <span class="chip">Procedural Generation</span>
+      <span class="chip">432 Hz</span>
+      <span class="chip">Dark Pop</span>
+      <span class="chip">Responsive Design</span>
+      <span class="chip">ARIA Accessibility</span>
+      <span class="chip">PostProcessing</span>
+    </p>
+
+    <footer>
+      <p>BELENTANI SKILLS SHOWCASE · 2026</p>
+      <p>Pedro Marcos Santos Belentani · São Paulo × Barcelona</p>
+      <p style="margin-top:8px"><a href="index.html">← Voltar à Judas Experience</a></p>
+    </footer>
+  </div>
+</body>
+</html>

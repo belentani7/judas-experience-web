@@ -1,0 +1,242 @@
+name: CI - judas-experience-web
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  THREEJS_VERSION: 'r158'
+
+jobs:
+  validate-spec:
+    name: Validate SPEC.md
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -q pyyaml
+      - name: Validate SPEC.md
+        run: python tools/validate-spec.py SPEC.md
+      - name: Check spec-code convergence
+        if: github.event_name == 'pull_request'
+        run: python tools/check-spec-convergence.py --spec SPEC.md --diff ${{ github.event.pull_request.base.sha }}..${{ github.sha }}
+
+  lint:
+    name: Lint (ESLint HTML/JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.html --format=compact --max-warnings=0
+
+  typecheck:
+    name: TypeCheck (TypeScript if present)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Check for TypeScript
+        id: ts_check
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            echo "has_ts=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_ts=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Run TypeCheck
+        if: steps.ts_check.outputs.has_ts == 'true'
+        run: npx tsc --noEmit --skipLibCheck
+
+  test:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Start static server
+        run: npx serve . -p 3000 &
+        shell: bash
+      - name: Wait for server
+        run: sleep 5 && curl -f http://localhost:3000/
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=github
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  accessibility:
+    name: Accessibility (axe-core WCAG 2.1 AA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Start static server
+        run: npx serve . -p 3000 &
+        shell: bash
+      - name: Wait for server
+        run: sleep 5 && curl -f http://localhost:3000/
+      - name: Run axe-core CLI
+        run: npx axe-core-cli http://localhost:3000 --tags wcag2aa --save ./axe-results.json
+      - name: Upload axe results
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-results
+          path: axe-results.json
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse CI (Performance Budgets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Start static server
+        run: npx serve . -p 3000 &
+        shell: bash
+      - name: Wait for server
+        run: sleep 5 && curl -f http://localhost:3000/
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:3000/
+          budgetPath: ./lighthouse-budget.json
+          uploadArtifacts: true
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
+
+  validate-shaders:
+    name: Validate GLSL Shaders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate shaders
+        run: python tools/validate-shaders.py
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run npm audit
+        run: npm audit --audit-level=high || true
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+  deploy-preview:
+    name: Deploy Preview (Vercel)
+    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel Preview
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        id: vercel-deploy
+      - name: Comment Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: ${{ github.repository_owner }},
+              repo: ${{ github.event.repository.name }},
+              body: '🚀 Preview deployment: ${{ steps.vercel-deploy.outputs.url }}'
+            })
+
+  deploy-production:
+    name: Deploy Production (Vercel)
+    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel Production
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        id: vercel-deploy
+      - name: Verify Production URL
+        run: |
+          URL="${{ steps.vercel-deploy.outputs.url }}"
+          echo "Production URL: $URL"
+          curl -f -I "$URL" || exit 1
+          curl -f -I "$URL/health" || exit 1
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            Deployed to: ${{ steps.vercel-deploy.outputs.url }}
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: false
