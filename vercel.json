@@ -4,6 +4,10 @@
   "framework": "none",
   "rewrites": [
     {
+      "source": "/health",
+      "destination": "/health.txt"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
