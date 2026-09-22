@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JUDAS · Experiencia Galáctica</title>
+  <meta name="description" content="La traición como arte. Experiencia cyberpunk inmersiva.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Fondo estelar animado -->
+  <div class="starfield" id="starfield"></div>
+  
+  <!-- Nebulosa cyberpunk -->
+  <div class="nebula"></div>
+  
+  <!-- Grid cyberpunk -->
+  <div class="cyber-grid"></div>
+  
+  <!-- Cursor personalizado -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+  
+  <!-- Header -->
+  <header class="glass-header">
+    <div class="logo">
+      <span class="logo-glyph">✞</span>
+      <span class="logo-text">JUDAS</span>
+      <span class="logo-sub">GALACTIC EXPERIENCE</span>
+    </div>
+    <nav class="glass-nav">
+      <a href="#genesis" class="nav-link">GÉNESIS</a>
+      <a href="#traicion" class="nav-link">TRAICIÓN</a>
+      <a href="#beso" class="nav-link">EL BESO</a>
+      <a href="#redencion" class="nav-link">REDENCIÓN</a>
+      <a href="#album" class="nav-link">ÁLBUM</a>
+    </nav>
+  </header>
+  
+  <!-- Hero Section -->
+  <section class="hero-section" id="genesis">
+    <div class="hero-content">
+      <div class="glitch-wrapper">
+        <h1 class="glitch-title" data-text="JUDAS">JUDAS</h1>
+        <h1 class="glitch-title glitch-back" data-text="JUDAS">JUDAS</h1>
+      </div>
+      <p class="hero-subtitle">LA TRAICIÓN COMO ARTE SUPREMO</p>
+      <p class="hero-description">
+        En el vacío interestelar, donde la luz se curva y el tiempo se pliega, 
+        existe una historia que resuena a través de las galaxias. 
+        La historia del que amó demasiado. Del que traicionó por amor.
+      </p>
+      <div class="cta-group">
+        <button class="glass-button primary" onclick="enterExperience()">
+          <span class="button-icon">◈</span>
+          ENTRAR EN LA EXPERIENCIA
+        </button>
+        <button class="glass-button secondary" onclick="showTrailer()">
+          <span class="button-icon">▶</span>
+          VER TRÁILER
+        </button>
+      </div>
+    </div>
+    
+    <!-- Elemento visual: Órbita -->
+    <div class="orbit-container">
+      <div class="orbit-ring ring-1"></div>
+      <div class="orbit-ring ring-2"></div>
+      <div class="orbit-ring ring-3"></div>
+      <div class="orbit-core"></div>
+      <div class="orbit-particle p1"></div>
+      <div class="orbit-particle p2"></div>
+      <div class="orbit-particle p3"></div>
+    </div>
+  </section>
+  
+  <!-- Section: La Traición -->
+  <section class="betrayal-section" id="traicion">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <h2 class="section-title">LA TRAICIÓN</h2>
+      <p class="section-tagline">30 monedas de plata. Una eternidad de preguntas.</p>
+    </div>
+    
+    <div class="betrayal-grid">
+      <div class="glass-card betrayal-card">
+        <div class="card-icon">💰</div>
+        <h3>EL PRECIO</h3>
+        <p class="card-number">30</p>
+        <p class="card-text">Monedas de plata. El precio de un dios. El precio de un amigo.</p>
+        <div class="card-glow"></div>
+      </div>
+      
+      <div class="glass-card betrayal-card">
+        <div class="card-icon">🌙</div>
+        <h3>LA NOCHE</h3>
+        <p class="card-number">JUEVES</p>
+        <p class="card-text">La última cena. El último beso. La primera traición.</p>
+        <div class="card-glow"></div>
+      </div>
+      
+      <div class="glass-card betrayal-card">
+        <div class="card-icon">✞</div>
+        <h3>EL DESTINO</h3>
+        <p class="card-number">GÓLGOTA</p>
+        <p class="card-text">Donde el amor y la muerte se encuentran en un abrazo eterno.</p>
+        <div class="card-glow"></div>
+      </div>
+    </div>
+    
+    <!-- Timeline de la traición -->
+    <div class="timeline-container">
+      <div class="timeline-line"></div>
+      <div class="timeline-event" data-time="19:00">
+        <div class="event-dot"></div>
+        <div class="event-content glass-card">
+          <h4>LA ÚLTIMA CENA</h4>
+          <p>"Uno de vosotros me va a traicionar"</p>
+        </div>
+      </div>
+      <div class="timeline-event" data-time="22:00">
+        <div class="event-dot"></div>
+        <div class="event-content glass-card">
+          <h4>GETSEMANÍ</h4>
+          <p>"Padre, si es posible, que pase de mí este cáliz"</p>
+        </div>
+      </div>
+      <div class="timeline-event" data-time="23:59">
+        <div class="event-dot"></div>
+        <div class="event-content glass-card">
+          <h4>EL BESO</h4>
+          <p>"¿Con un beso traicionas al Hijo del Hombre?"</p>
+        </div>
+      </div>
+      <div class="timeline-event" data-time="03:00">
+        <div class="event-dot"></div>
+        <div class="event-content glass-card">
+          <h4>EL GALLO</h4>
+          <p>"Antes que cante el gallo, me habrás negado tres veces"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Section: El Beso -->
+  <section class="kiss-section" id="beso">
+    <div class="kiss-background"></div>
+    <div class="kiss-content">
+      <div class="kiss-text">
+        <h2 class="kiss-title">EL BESO</h2>
+        <p class="kiss-quote">
+          "Amigo, a lo que has venido"
+        </p>
+        <p class="kiss-analysis">
+          El beso de Judas no fue un acto de odio. Fue el acto más complejo 
+          de la historia humana. Amor y traición fundidos en un solo gesto. 
+          La paradoja definitiva: traicionar para cumplir el destino.
+        </p>
+        <div class="kiss-stats">
+          <div class="stat-item">
+            <span class="stat-number" data-target="2000">0</span>
+            <span class="stat-label">AÑOS DE INTERPRETACIÓN</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-target="30">0</span>
+            <span class="stat-label">MONEDAS</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-target="1">0</span>
+            <span class="stat-label">BESO ETERNO</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Visualización del beso -->
+      <div class="kiss-visual">
+        <div class="kiss-orb">
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-core"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Section: Redención -->
+  <section class="redemption-section" id="redencion">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <h2 class="section-title">REDENCIÓN</h2>
+      <p class="section-tagline">¿Puede la traición ser un acto de amor?</p>
+    </div>
+    
+    <div class="redemption-narrative">
+      <div class="narrative-chapter glass-card">
+        <h3>I. EL DISCÍPULO AMADO</h3>
+        <p>Judas no era un villano. Era el más cercano. El que sostenía la bolsa. 
+        El que caminaba junto al maestro. El que creía con más fuerza.</p>
+      </div>
+      
+      <div class="narrative-chapter glass-card">
+        <h3>II. LA DUDA DIVINA</h3>
+        <p>¿Qué vio Judas que los demás no vieron? ¿Entendió algo que nosotros no entendemos? 
+        Su traición fue necesaria. Sin ella, no hay cruz. Sin cruz, no hay redención.</p>
+      </div>
+      
+      <div class="narrative-chapter glass-card">
+        <h3>III. EL SACRIFICIO DEL TRAITOR</h3>
+        <p>Judas cargó con el odio eterno para que el plan divino se cumpliera. 
+        ¿Quién hizo el mayor sacrificio? ¿El que murió en la cruz o el que vivió 
+        con la culpa de haberlo entregado?</p>
+      </div>
+      
+      <div class="narrative-chapter glass-card">
+        <h3>IV. LA PREGUNTA ETERNA</h3>
+        <p>Si Judas no hubiera traicionado, ¿habría habido salvación? 
+        La traición como acto de amor. La paradoja como verdad.</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Section: Álbum -->
+  <section class="album-section" id="album">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <h2 class="section-title">EL ÁLBUM</h2>
+      <p class="section-tagline">La banda sonora de la traición</p>
+    </div>
+    
+    <div class="album-container">
+      <div class="album-cover">
+        <div class="album-art">
+          <div class="album-glyph">✞</div>
+          <div class="album-title">JUDAS</div>
+          <div class="album-subtitle">GALACTIC EXPERIENCE</div>
+        </div>
+      </div>
+      
+      <div class="tracklist">
+        <div class="track glass-card">
+          <span class="track-number">01</span>
+          <span class="track-title">Génesis Interestelar</span>
+          <span class="track-duration">4:33</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">02</span>
+          <span class="track-title">30 Monedas</span>
+          <span class="track-duration">3:47</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">03</span>
+          <span class="track-title">La Última Cena</span>
+          <span class="track-duration">5:12</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">04</span>
+          <span class="track-title">Getsemaní (El Cáliz)</span>
+          <span class="track-duration">6:28</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">05</span>
+          <span class="track-title">El Beso (Traición)</span>
+          <span class="track-duration">4:55</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">06</span>
+          <span class="track-title">Negación (3 veces)</span>
+          <span class="track-duration">3:33</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">07</span>
+          <span class="track-title">Galgo Cantor</span>
+          <span class="track-duration">2:47</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">08</span>
+          <span class="track-title">Gólgota</span>
+          <span class="track-duration">7:15</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">09</span>
+          <span class="track-title">La Cuerda y el Campo</span>
+          <span class="track-duration">4:08</span>
+          <button class="track-play">▶</button>
+        </div>
+        <div class="track glass-card">
+          <span class="track-number">10</span>
+          <span class="track-title">Redención (Bonus)</span>
+          <span class="track-duration">5:44</span>
+          <button class="track-play">▶</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="glass-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="logo-glyph">✞</span>
+        <span>JUDAS · GALACTIC EXPERIENCE</span>
+      </div>
+      <div class="footer-links">
+        <a href="#">Manifiesto</a>
+        <a href="#">Privacidad</a>
+        <a href="#">Contacto</a>
+      </div>
+      <div class="footer-copy">
+        <p>© 2026 Belentani · NOIACORE · La traición como arte</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Modal Trailer -->
+  <div class="modal" id="trailerModal">
+    <div class="modal-content glass-card">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <h2>TRÁILER: JUDAS GALACTIC EXPERIENCE</h2>
+      <div class="trailer-placeholder">
+        <div class="trailer-play">▶</div>
+        <p>Próximamente</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>
