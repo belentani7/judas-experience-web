@@ -34,9 +34,11 @@
   "author": "Belentani",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "^4.8.0",
     "@playwright/test": "^1.40.0",
     "axe-core": "^4.8.0",
     "eslint": "^8.55.0",
+    "eslint-plugin-html": "^8.0.0",
     "lighthouse": "^11.0.0",
     "serve": "^14.2.0"
   },

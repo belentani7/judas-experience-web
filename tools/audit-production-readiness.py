@@ -7,7 +7,7 @@ from pathlib import Path
 
 CRITERIA = {
     "critical": [
-        ("origin_github", "Remote origin → github.com/belentani7/<repo>"),
+        ("origin_github", "Remote origin -> github.com/belentani7/<repo>"),
         ("branch_protected", "Branch main protegida (PR required, status checks)"),
         ("no_secrets", "Cero secretos en repo (git log clean)"),
         ("gitignore_complete", ".gitignore completo"),
@@ -15,8 +15,8 @@ CRITERIA = {
         ("build_passes", "Build local pasa (exit 0)"),
         ("deploy_config", "Config deploy detectada + deploy plataforma correcta"),
         ("env_vars_platform", "Env vars en plataforma (NO en repo)"),
-        ("health_endpoint", "Health endpoint /api/health o /healthz → 200"),
-        ("readme_links", "README con descripción, install, run, deploy, env vars, links vivos"),
+        ("health_endpoint", "Health endpoint /api/health o /healthz -> 200"),
+        ("readme_links", "README con descripcion, install, run, deploy, env vars, links vivos"),
     ],
     "high": [
         ("conventional_commits", "Commits convencionales"),
@@ -32,7 +32,7 @@ CRITERIA = {
         ("seo_access", "robots.txt, sitemap.xml, meta OG/Twitter"),
         ("a11y_wcag", "Accesibilidad WCAG 2.1 AA (axe-core en CI)"),
         ("changelog", "CHANGELOG.md actualizado"),
-        ("spec_md", "SPEC.md/docs/spec.md con criterios aceptación"),
+        ("spec_md", "SPEC.md/docs/spec.md con criterios aceptacion"),
     ],
     "medium": [
         ("cwv", "Core Web Vitals: LCP<2.5s, CLS<0.1, INP<200ms"),
@@ -121,7 +121,7 @@ def check_criterion(name, description, repo_path):
         readme = path / "README.md"
         if not readme.exists():
             return False, "No README.md"
-        content = readme.read_text()
+        content = readme.read_text(encoding='utf-8', errors='ignore')
         checks = ["http://", "https://", "install", "run", "deploy", "env"]
         found = [c for c in checks if c.lower() in content.lower()]
         return len(found) >= 4, f"Found: {found}"
@@ -156,11 +156,24 @@ def check_criterion(name, description, repo_path):
         return cfg.get("compilerOptions", {}).get("strict") == True, "Strict: " + str(cfg.get("compilerOptions", {}).get("strict"))
 
     elif name == "lint_passes":
-        ok, out, err = run_cmd("npm run lint 2>&1 | head -20", cwd=path)
+        # Cross-platform: avoid head/tail on Windows
+        import platform
+        if platform.system() == "Windows":
+            ok, out, err = run_cmd("npm run lint 2>&1", cwd=path)
+            if ok:
+                out = "\n".join(out.splitlines()[:20])
+        else:
+            ok, out, err = run_cmd("npm run lint 2>&1 | head -20", cwd=path)
         return ok, out if ok else err[:200]
 
     elif name == "tests_pass":
-        ok, out, err = run_cmd("npm test 2>&1 | tail -10", cwd=path)
+        import platform
+        if platform.system() == "Windows":
+            ok, out, err = run_cmd("npm test 2>&1", cwd=path)
+            if ok:
+                out = "\n".join(out.splitlines()[-10:])
+        else:
+            ok, out, err = run_cmd("npm test 2>&1 | tail -10", cwd=path)
         return ok, out if ok else err[:200]
 
     elif name == "preview_deploys":
@@ -266,8 +279,8 @@ def main():
     args = parser.parse_args()
 
     repo_path = Path(args.repo).resolve()
-    print(f"🏭 PRODUCTION READINESS AUDIT - Level {args.level}")
-    print(f"📁 Repo: {repo_path}")
+    print(f"PRODUCTION READINESS AUDIT - Level {args.level}")
+    print(f"Repo: {repo_path}")
     print("=" * 60)
 
     # Determine which criteria to check
@@ -282,25 +295,25 @@ def main():
     total = len(to_check)
 
     for name, desc in to_check:
-        print(f"\n🔍 {name}: {desc}")
+        print(f"\nChecking {name}: {desc}")
         ok, detail = check_criterion(name, desc, repo_path)
-        status = "✅ PASS" if ok else "❌ FAIL"
-        print(f"   {status} - {detail}")
+        status = "PASS" if ok else "FAIL"
+        print(f"   [{status}] - {detail}")
         results[name] = {"description": desc, "passed": ok, "detail": detail}
         if ok:
             passed += 1
 
     print("\n" + "=" * 60)
-    print(f"📊 RESULT: {passed}/{total} criteria passed ({passed/total*100:.0f}%)")
+    print(f"RESULT: {passed}/{total} criteria passed ({passed/total*100:.0f}%)")
 
     # Level thresholds
     thresholds = {0: 0.8, 1: 0.9, 2: 1.0}
     threshold = thresholds[args.level]
     if passed / total >= threshold:
-        print(f"🎉 LEVEL {args.level} ACHIEVED (≥{threshold*100:.0f}%)")
+        print(f"LEVEL {args.level} ACHIEVED (>= {threshold*100:.0f}%)")
         return 0
     else:
-        print(f"💥 LEVEL {args.level} NOT MET (need ≥{threshold*100:.0f}%)")
+        print(f"LEVEL {args.level} NOT MET (need >= {threshold*100:.0f}%)")
         return 1
 
 if __name__ == "__main__":

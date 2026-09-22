@@ -1,0 +1,22 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 13,
+    "sourceType": "module"
+  },
+  "plugins": ["html"],
+  "ignorePatterns": [
+    "vendor/**",
+    "node_modules/**",
+    "playwright-report/**",
+    "test-results/**",
+    "axe-results/**",
+    ".lighthouseci/**",
+    "*.min.js"
+  ]
+}

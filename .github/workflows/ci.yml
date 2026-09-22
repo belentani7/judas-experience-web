@@ -67,7 +67,7 @@ jobs:
         run: npx tsc --noEmit --skipLibCheck
 
   test:
-    name: Playwright E2E Tests
+    name: Playwright E2E Tests (home)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -86,8 +86,8 @@ jobs:
         shell: bash
       - name: Wait for server
         run: sleep 5 && curl -f http://localhost:3000/
-      - name: Run Playwright tests
-        run: npx playwright test --reporter=github
+      - name: Run Playwright tests (home)
+        run: npx playwright test e2e/home.spec.ts --reporter=github
       - name: Upload Playwright artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -108,18 +108,21 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci --ignore-scripts
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
       - name: Start static server
         run: npx serve . -p 3000 &
         shell: bash
       - name: Wait for server
         run: sleep 5 && curl -f http://localhost:3000/
-      - name: Run axe-core CLI
-        run: npx axe-core-cli http://localhost:3000 --tags wcag2aa --save ./axe-results.json
-      - name: Upload axe results
+      - name: Run axe-core via Playwright
+        run: npx playwright test e2e/a11y.spec.ts --reporter=github
+      - name: Upload Playwright artifacts
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: axe-results
-          path: axe-results.json
+          name: playwright-report-a11y
+          path: playwright-report/
           retention-days: 7
 
   lighthouse:
