@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 5**: Accessibility & SEO — multilingual meta tags (PT>ES>EN>CA), ARIA canvas, reduced motion, robots.txt/sitemap.xml generation
+- **Phase 4**: Performance & Assets — Three.js vendor update, GLSL validator, asset optimizer (WebP/AVIF)
+- **Phase 3**: Quality Gates — ESLint (HTML/JS), Playwright E2E (3 browsers), axe-core via Playwright, Lighthouse CI budgets
+- **Phase 2**: Vercel Deploy + Health Endpoint — /health static endpoint, vercel.json SPA rewrite, .env.example
+- **Phase 1**: CI/CD Foundation — GitHub Actions (validate-spec, lint, typecheck, test, a11y, lighthouse, security), Dependabot, CodeQL
+- **Phase 0**: Repo Initialization — git init, conventional commit, GitHub push, production readiness audit baseline
+
+### Added (pre-existing SDD infrastructure)
 - Spec-Driven Development (SDD) protocol implementation
 - SPEC.md with constitution-grade checklist (P1-P5)
 - Technical plan (tasks/plan.md) with architecture, risks, parallelization
