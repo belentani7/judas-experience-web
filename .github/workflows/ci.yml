@@ -182,13 +182,40 @@ jobs:
           base: main
           head: HEAD
 
+  generate-seo:
+    name: Generate SEO (robots.txt, sitemap.xml)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Generate SEO files
+        run: node tools/generate-seo.js
+      - name: Upload SEO artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-files
+          path: |
+            robots.txt
+            sitemap.xml
+          retention-days: 7
+
   deploy-preview:
     name: Deploy Preview (Vercel)
-    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security]
+    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security, generate-seo]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Download SEO artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: seo-files
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull Vercel Environment
@@ -211,11 +238,15 @@ jobs:
 
   deploy-production:
     name: Deploy Production (Vercel)
-    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security]
+    needs: [validate-spec, lint, typecheck, test, accessibility, lighthouse, validate-shaders, security, generate-seo]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Download SEO artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: seo-files
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull Vercel Environment
@@ -231,6 +262,8 @@ jobs:
           echo "Production URL: $URL"
           curl -f -I "$URL" || exit 1
           curl -f -I "$URL/health" || exit 1
+          curl -f -I "$URL/robots.txt" || exit 1
+          curl -f -I "$URL/sitemap.xml" || exit 1
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:

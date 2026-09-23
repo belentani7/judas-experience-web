@@ -1,16 +1,46 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="pt">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JUDAS · Experiencia Galáctica</title>
-  <meta name="description" content="La traición como arte. Experiencia cyberpunk inmersiva.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="BELENTANI — The Judas Experience. Universo visual procedural: planeta vivo, diamante espectral, chave dourada PBR e máquina orgânica em Three.js. Dark pop, 432 Hz.">
+  <meta property="og:title" content="BELENTANI — The Judas Experience" />
+  <meta property="og:description" content="Universo visual interativo: planeta procedural, diamante IOR 2.417, chave dourada e máquina orgânica. Criado por Belentani." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="author" content="Belentani" />
+  <title>BELENTANI — The Judas Experience // Universo Visual Interativo</title>
+
+  <link rel="alternate" hreflang="pt" href="https://judas.belentani.com/" />
+  <link rel="alternate" hreflang="es" href="https://judas.belentani.com/es/" />
+  <link rel="alternate" hreflang="en" href="https://judas.belentani.com/en/" />
+  <link rel="alternate" hreflang="ca" href="https://judas.belentani.com/ca/" />
+  <link rel="alternate" hreflang="x-default" href="https://judas.belentani.com/" />
   <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+  </script>
 </head>
 <body>
+  <canvas id="webgl" aria-label="The Judas Experience - planeta procedural, diamante, chave, máquina" role="img"></canvas>
+  <div id="fatal" class="fatal" style="display:none;">
+    <div class="fatal-content">
+      <h2>Experiência não disponível</h2>
+      <p id="fatalMessage"></p>
+    </div>
+  </div>
+  <div id="boot" class="boot">
+    <div class="boot-bar-container">
+      <div id="bootBar" class="boot-bar"></div>
+    </div>
+    <span id="bootPercent">000%</span>
+    <p id="bootStatus">Inicializando...</p>
+  </div>
   <!-- Fondo estelar animado -->
   <div class="starfield" id="starfield"></div>
   
@@ -336,5 +366,6 @@
   </div>
   
   <script src="script.js"></script>
+  <script type="module" src="./core/hub-scene.js"></script>
 </body>
 </html>

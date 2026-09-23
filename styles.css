@@ -26,28 +26,65 @@
   --font-body: 'Rajdhani', sans-serif;
 }
 
-/* Reset & Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .starfield,
+  .nebula,
+  .cyber-grid,
+  .orbit-ring,
+  .orbit-particle,
+  .kiss-orb,
+  .orb-ring,
+  .glitch-title,
+  .track-play:hover {
+    animation: none !important;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+/* Canvas Styles */
+#webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+  outline: 0;
+  touch-action: none;
 }
 
-body {
-  font-family: var(--font-body);
-  background: var(--cyber-black);
-  color: var(--cyber-light);
-  overflow-x: hidden;
-  cursor: none;
+#webgl.transitioning {
+  filter: blur(3px) brightness(1.1);
 }
 
-/* ============================================
-   STARFIELD BACKGROUND
-   ============================================ */
+/* Fallback for no WebGL */
+.css-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Vignette, scanlines, noise, cinema bars */
+.vignette,
+.scanlines,
+.noise,
+.cinema-bars {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
 .starfield {
   position: fixed;
   top: 0;
