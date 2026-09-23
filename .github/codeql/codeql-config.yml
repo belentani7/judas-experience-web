@@ -1,0 +1,17 @@
+name: "CodeQL Configuration"
+disable-default-queries: false
+queries:
+  - uses: security-and-quality
+paths:
+  - .
+  - core/
+  - sources/
+  - tools/
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/vendor/**'
+  - '**/*.min.js'
+  - '**/playwright-report/**'
+  - '**/test-results/**'
+  - '**/.lighthouseci/**'
+  - '**/axe-results/**'
