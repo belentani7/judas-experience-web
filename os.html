@@ -432,7 +432,7 @@ function newsPanel(){
     var n=inn.value.trim(), m=ine.value.trim();
     if(n.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)){ ok.style.color="#ff285f"; ok.textContent="Preenche nome e e-mail válido."; return; }
     var list=load(); list.push({n:n,m:m,t:Date.now()});
-    try{ localStorage.setItem(KEY,JSON.stringify(list)); }catch(e2){}
+    try{ localStorage.setItem(KEY,JSON.stringify(list)); }catch(e2){ /* ignore */ }
     ok.style.color="#54ffa8"; ok.textContent="Registado. Bem-vindo ao caos."; f.reset(); show();
   });
   show();

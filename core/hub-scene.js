@@ -2422,7 +2422,7 @@
         if (heroEl) {
           if (bloomProx > 0.6) {
             // Close to center: bright white/cyan to counter red bloom
-            var f = (bloomProx - 0.6) / 0.4;
+            f = (bloomProx - 0.6) / 0.4;
             var r = Math.round(255 - f * 180);
             var g = Math.round(0 + f * 245);
             var b = Math.round(60 + f * 195);

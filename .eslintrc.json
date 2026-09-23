@@ -10,13 +10,22 @@
     "sourceType": "module"
   },
   "plugins": ["html"],
+  "globals": {
+    "THREE": "readonly",
+    "AxeBuilder": "readonly"
+  },
   "ignorePatterns": [
     "vendor/**",
+    "sources/**",
     "node_modules/**",
     "playwright-report/**",
     "test-results/**",
     "axe-results/**",
     ".lighthouseci/**",
     "*.min.js"
-  ]
+  ],
+  "rules": {
+    "no-inner-declarations": "off",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+  }
 }
