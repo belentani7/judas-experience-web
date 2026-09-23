@@ -90,7 +90,7 @@ jobs:
         run: npx playwright test e2e/home.spec.ts --reporter=github
       - name: Upload Playwright artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
@@ -119,7 +119,7 @@ jobs:
         run: npx playwright test e2e/a11y.spec.ts --reporter=github
       - name: Upload Playwright artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report-a11y
           path: playwright-report/
@@ -150,7 +150,7 @@ jobs:
           budgetPath: ./lighthouse-budget.json
           uploadArtifacts: true
       - name: Upload Lighthouse report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-report
           path: .lighthouseci/
@@ -197,7 +197,7 @@ jobs:
       - name: Generate SEO files
         run: node tools/generate-seo.js
       - name: Upload SEO artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: seo-files
           path: |
