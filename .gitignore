@@ -22,6 +22,7 @@ build/
 .next/
 coverage/
 *.log
+*.lock
 
 # Python
 __pycache__/
