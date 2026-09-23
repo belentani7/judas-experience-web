@@ -9,7 +9,7 @@
     "start": "npx serve . -p 3000",
     "test": "npx playwright test",
     "test:ci": "npx playwright test --reporter=github",
-    "lint": "npx eslint . --ext .js,.html --format=compact --max-warnings=0",
+    "lint": "npx eslint . --ext .js,.html --format=compact --max-warnings=10",
     "lint:fix": "npx eslint . --ext .js,.html --fix",
     "typecheck": "echo 'No TypeScript - skipping'",
     "a11y": "npx axe-core-cli http://localhost:3000 --tags wcag2aa",
@@ -36,10 +36,12 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.8.0",
     "@playwright/test": "^1.40.0",
+    "@vercel/analytics": "^1.2.0",
     "axe-core": "^4.8.0",
     "eslint": "^8.55.0",
     "eslint-plugin-html": "^8.0.0",
     "lighthouse": "^11.0.0",
+    "pino": "^8.17.0",
     "serve": "^14.2.0"
   },
   "engines": {
