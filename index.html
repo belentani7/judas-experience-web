@@ -72,10 +72,10 @@
   </header>
   
   <!-- Hero Section -->
-  <section class="hero-section" id="genesis">
+  <section class="hero-section hero" id="genesis">
     <div class="hero-content">
       <div class="glitch-wrapper">
-        <h1 class="glitch-title" data-text="JUDAS">JUDAS</h1>
+        <h1 id="hero-title" class="glitch-title" data-text="JUDAS">JUDAS</h1>
         <h1 class="glitch-title glitch-back" data-text="JUDAS">JUDAS</h1>
       </div>
       <p class="hero-subtitle">LA TRAICIÓN COMO ARTE SUPREMO</p>
@@ -366,6 +366,83 @@
     </div>
   </div>
   
+  <!-- HUD Overlay (3D Scene) -->
+  <div class="hud">
+    <!-- Focus Navigation -->
+    <nav class="focus-nav">
+      <button class="focus-btn" data-focus="all" title="Visão geral (1)">ALL</button>
+      <button class="focus-btn" data-focus="planet" title="Planeta Vivo (2)">PLANETA</button>
+      <button class="focus-btn" data-focus="diamond" title="Diamante Espectral (3)">DIAMANTE</button>
+      <button class="focus-btn" data-focus="key" title="Chave Dourada (4)">CHAVE</button>
+      <button class="focus-btn" data-focus="machine" title="Máquina Orgânica (5)">MÁQUINA</button>
+    </nav>
+
+    <!-- Info Panel -->
+    <div class="info-panel">
+      <div class="panel-title">Organic Machine</div>
+      <div class="panel-subtitle">Todos os sistemas sincronizados numa única cena.</div>
+    </div>
+
+    <!-- 3D Object Labels -->
+    <div class="hud-labels">
+      <div id="label-diamond" class="hud-label">DIAMANTE ESPECTRAL</div>
+      <div id="label-planet" class="hud-label">PLANETA VIVO</div>
+      <div id="label-key" class="hud-label">CHAVE DOURADA</div>
+    </div>
+
+    <!-- Telemetry HUD -->
+    <div class="telemetry">
+      <div class="telemetry-item">
+        <span class="telemetry-label">FPS</span>
+        <span id="fpsValue" class="telemetry-value">—</span>
+        <div id="fpsMeter" class="telemetry-meter" style="--value:0%"></div>
+      </div>
+      <div class="telemetry-item">
+        <span class="telemetry-label">GPU</span>
+        <span id="gpuValue" class="telemetry-value">—</span>
+      </div>
+      <div class="telemetry-item">
+        <span class="telemetry-label">PULSE</span>
+        <span id="pulseValue" class="telemetry-value">—</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="audioBtn" class="control-btn" title="Ativar/Desativar áudio (Espaço)">
+        <span id="audioWave" class="audio-wave" style="display:none">~</span>
+        <span>♪</span>
+      </button>
+      <button id="qualityBtn" class="control-btn" title="Alternar qualidade (Q)">QUAL</button>
+      <button id="fullscreenBtn" class="control-btn" title="Tela cheia (F)">⛶</button>
+    </div>
+  </div>
+
+  <!-- Codex Modal -->
+  <div id="codex" class="codex">
+    <div class="codex-content">
+      <button class="codex-close" aria-label="Cerrar" onclick="document.getElementById('codex').classList.remove('open')">×</button>
+      <h2>CÓDICE JUDAS</h2>
+      <div class="codex-body">
+        <div class="codex-entry">
+          <h3>PLANETA VIVO</h3>
+          <p>Superfície procedural, respiração e veias bioelétricas. Frequência raiz: 432 Hz.</p>
+        </div>
+        <div class="codex-entry">
+          <h3>DIAMANTE ESPECTRAL</h3>
+          <p>Índice de refração 2.417. Dispersão cromática e micro-facetas PBR.</p>
+        </div>
+        <div class="codex-entry">
+          <h3>CHAVE DOURADA</h3>
+          <p>Metal PBR com micro-arranhões. 30 monedas — el precio del silencio.</p>
+        </div>
+        <div class="codex-entry">
+          <h3>MÁQUINA ORGÂNICA</h3>
+          <p>Íris, anéis e placas metálicas com pulso orgânico. Tritono industrial.</p>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="script.js"></script>
   <script type="module" src="./core/hub-scene.js"></script>
 </body>

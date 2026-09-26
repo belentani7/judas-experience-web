@@ -226,6 +226,10 @@ function initTimeline() {
 // ============================================
 function initTrackEffects() {
   const tracks = document.querySelectorAll('.track');
+  const audio = new Audio();
+  audio.src = './assets/audio/judas-demo-pura.mp3';
+  audio.loop = true;
+  let currentTrack = null;
   
   tracks.forEach(track => {
     track.addEventListener('mouseenter', () => {
@@ -240,7 +244,29 @@ function initTrackEffects() {
     
     track.addEventListener('click', () => {
       const title = track.querySelector('.track-title').textContent;
-      showNotification(`Reproduciendo: ${title}`);
+      const playBtn = track.querySelector('.track-play');
+      
+      if (currentTrack === track) {
+        if (audio.paused) {
+          audio.play();
+          playBtn.textContent = '⏸';
+          window.judasAudioState.playing = true;
+        } else {
+          audio.pause();
+          playBtn.textContent = '▶';
+          window.judasAudioState.playing = false;
+        }
+      } else {
+        audio.currentTime = 0;
+        audio.play();
+        playBtn.textContent = '⏸';
+        window.judasAudioState.playing = true;
+        if (currentTrack) {
+          currentTrack.querySelector('.track-play').textContent = '▶';
+        }
+        currentTrack = track;
+        showNotification(`Reproduciendo: ${title}`);
+      }
     });
   });
 }
@@ -300,6 +326,15 @@ function enterExperience() {
   setTimeout(() => {
     overlay.remove();
     document.body.style.overflow = '';
+    
+    const hud = document.querySelector('.hud');
+    if (hud) hud.classList.add('show');
+    
+    if (window.__BELENTANI_STARTED__) {
+      const planetBtn = document.querySelector('[data-focus="planet"]');
+      if (planetBtn) planetBtn.click();
+    }
+    
     document.querySelector('#traicion').scrollIntoView({ behavior: 'smooth' });
   }, 500);
 }
@@ -411,11 +446,36 @@ function createParticle(x, y) {
 }
 
 // ============================================
-// AUDIO VISUALIZER (PLACEHOLDER)
+// AUDIO VISUALIZER
 // ============================================
 function initAudioVisualizer() {
-  // Placeholder for future audio integration
-  console.log('🎵 Audio system ready');
+  const track = document.querySelector('.track');
+  if (!track) return;
+  
+  const bars = [];
+  for (let i = 0; i < 8; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'viz-bar';
+    bar.style.setProperty('--i', i);
+    bars.push(bar);
+  }
+  const visualizer = document.createElement('div');
+  visualizer.className = 'audio-visualizer';
+  visualizer.append(...bars);
+  document.querySelector('.hero-section').appendChild(visualizer);
+  
+  window.judasAudioState = { playing: false, bars, visualizer };
+  
+  setInterval(() => {
+    if (window.judasAudioState.playing) {
+      visualizer.classList.add('active');
+      bars.forEach(bar => {
+        bar.style.height = (4 + Math.random() * 24) + 'px';
+      });
+    } else {
+      visualizer.classList.remove('active');
+    }
+  }, 80);
 }
 
 // ============================================

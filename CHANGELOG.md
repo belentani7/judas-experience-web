@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **HUD Integration**: Focus navigation (ALL/PLANETA/DIAMANTE/CHAVE/MÁQUINA), info panel, 3D object labels, telemetry HUD (FPS/GPU/PULSE), audio toggle, quality selector, fullscreen button, codex modal
+- **Keyboard Shortcuts**: 1-5 focus, arrows navigation, L=codex, Q=quality, F=fullscreen, Space=audio toggle
+- **Journey Cinematic**: Enter Experience button triggers 90s space traversal with waypoints, trail particles, skip button, hero dimming, HUD auto-hide
 - **Phase 5**: Accessibility & SEO — multilingual meta tags (PT>ES>EN>CA), ARIA canvas, reduced motion, robots.txt/sitemap.xml generation
 - **Phase 4**: Performance & Assets — Three.js vendor update, GLSL validator, asset optimizer (WebP/AVIF)
 - **Phase 3**: Quality Gates — ESLint (HTML/JS), Playwright E2E (3 browsers), axe-core via Playwright, Lighthouse CI budgets

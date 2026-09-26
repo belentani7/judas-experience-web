@@ -1760,6 +1760,16 @@
         if (e.key === "l" || e.key === "L") {
           document.getElementById("codex").classList.toggle("open");
         }
+        if (e.key === "q" || e.key === "Q") {
+          qualityBtn.click();
+        }
+        if (e.key === "f" || e.key === "F") {
+          document.getElementById("fullscreenBtn").click();
+        }
+        if (e.key === " ") {
+          e.preventDefault();
+          audioBtn.click();
+        }
       });
 
       // ---------- ETIQUETAS 3D → HTML ----------
@@ -2024,9 +2034,13 @@
         bootBar.style.width = `${bootValue}%`;
         bootPercent.textContent = `${String(Math.floor(bootValue)).padStart(3, "0")}%`;
 
-        if (bootValue >= 100) {
+         if (bootValue >= 100) {
           clearInterval(bootTimer);
           setTimeout(() => boot.classList.add("done"), 450);
+          setTimeout(() => {
+            const hud = document.querySelector(".hud");
+            hud?.classList.add("show");
+          }, 500);
         }
       }, 58);
 
@@ -2191,12 +2205,16 @@
         journeyStart = clock.getElapsedTime();
         journeyOverlay.style.display = "block";
         document.querySelector(".hero")?.classList.add("journey-active");
+        const hud = document.querySelector(".hud");
+        hud?.setAttribute("data-journey", "active");
       }
 
       function endJourney() {
         journeyActive = false;
         journeyOverlay.style.display = "none";
         document.querySelector(".hero")?.classList.remove("journey-active");
+        const hud = document.querySelector(".hud");
+        hud?.removeAttribute("data-journey");
         setFocus("all");
       }
       window.endJourney = endJourney;

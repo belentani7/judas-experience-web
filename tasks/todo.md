@@ -170,7 +170,10 @@
 
 ## Estado Actual
 - **Proyecto**: judas-experience-web
-- **Fase actual**: E3 TASKS (esta lista)
-- **Próximo gate**: Human aprueba task list → E4 IMPLEMENT
+- **Fase actual**: E4 IMPLEMENT (HUD integration, immersive experience)
+- **Gate E3**: Task list reviewed y aprobado
+- **HUD integrado**: Focus nav (ALL/PLANETA/DIAMANTE/CHAVE/MÁQUINA), info panel, 3D object labels, telemetry (FPS/GPU/PULSE), audio toggle (Space), quality selector (Q), fullscreen (F), codex modal (L)
+- **Journey cinematic**: 90s space traversal with 25 waypoints, trail particles, skip button, hero dimming, HUD auto-hide
+- **Keyboard**: 1-5 focus, arrows navigation, L codex, Q quality, F fullscreen, Space audio
 - **Repositorio destino**: `github.com/belentani7/judas-experience-web`
 - **Deploy target**: Vercel (static)
