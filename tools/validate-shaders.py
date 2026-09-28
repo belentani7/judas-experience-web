@@ -3,6 +3,13 @@
 import sys
 import re
 from pathlib import Path
+# Windows: forzar UTF-8 en stdout/stderr (evita UnicodeEncodeError con cp1252)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 SHADER_DIRS = ["sources/shaders", "sources", "core", "pipelines"]
 SHADER_EXTS = [".glsl", ".vert", ".frag", ".vs", ".fs", ".shader"]
@@ -55,7 +62,7 @@ def validate_shader_file(filepath):
     open_parens = content.count('(')
     close_parens = content.count(')')
     if open_parens != close_parens:
-        issues.append(f"{filepath}: Mismatched parentheses ({open_parens} open, {close_parens} close)"
+        issues.append(f"{filepath}: Mismatched parentheses ({open_parens} open, {close_parens} close)")
 
     # Check for common GLSL errors
     if 'gl_FragCoord' in content and 'gl_FragCoord.z' in content:

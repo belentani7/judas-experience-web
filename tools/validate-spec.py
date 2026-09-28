@@ -3,6 +3,13 @@
 import sys
 import re
 from pathlib import Path
+# Windows: forzar UTF-8 en stdout/stderr (evita UnicodeEncodeError con cp1252)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 REQUIRED_SECTIONS = [
     "Objective",
